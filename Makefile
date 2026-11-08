@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+export PATH := $(PWD)/.venv/bin:$(PATH)
 .PHONY: help up down ps logs clean test lint cluster-up cluster-down k8s-deploy demo-load demo-hpa demo-kill
 
 help:
