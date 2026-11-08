@@ -9,10 +9,10 @@ Full specification: [docs/PROJECT.md](docs/PROJECT.md)
 
 | Milestone | State |
 | :--- | :--- |
-| M1 Compose skeleton + simulator | not started |
-| M2 `ingestor-rs` | not started |
-| M3 TimescaleDB schema + persister | not started |
-| M4 `anomaly-worker-py` | not started |
+| M1 Compose skeleton + simulator | completed |
+| M2 `ingestor-rs` | completed |
+| M3 TimescaleDB schema + persister | completed |
+| M4 `anomaly-worker-py` | in progress |
 | M5 `api-rs` | not started |
 | M6 Grafana dashboards | not started |
 | M7 kind cluster | not started |
