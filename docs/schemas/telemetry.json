@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SmartMeterTelemetry",
+  "description": "3-phase smart meter telemetry metric payload",
+  "type": "object",
+  "required": [
+    "meter_id",
+    "timestamp",
+    "voltage_l1",
+    "voltage_l2",
+    "voltage_l3",
+    "current_l1",
+    "active_power_kw",
+    "total_energy_kwh",
+    "power_factor",
+    "frequency_hz"
+  ],
+  "properties": {
+    "meter_id": {
+      "type": "string",
+      "pattern": "^MZ-3P-[0-9]{4}$",
+      "description": "Unique identifier of the 3-phase meter"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of measurement reading"
+    },
+    "voltage_l1": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 500.0,
+      "description": "Phase 1 RMS Voltage in Volts (nominal 230V)"
+    },
+    "voltage_l2": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 500.0,
+      "description": "Phase 2 RMS Voltage in Volts (nominal 230V)"
+    },
+    "voltage_l3": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 500.0,
+      "description": "Phase 3 RMS Voltage in Volts (nominal 230V)"
+    },
+    "current_l1": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 200.0,
+      "description": "Phase 1 RMS Current in Amperes"
+    },
+    "current_l2": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 200.0,
+      "description": "Phase 2 RMS Current in Amperes"
+    },
+    "current_l3": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 200.0,
+      "description": "Phase 3 RMS Current in Amperes"
+    },
+    "active_power_kw": {
+      "type": "number",
+      "minimum": -100.0,
+      "maximum": 200.0,
+      "description": "Total 3-phase active real power in Kilowatts"
+    },
+    "total_energy_kwh": {
+      "type": "number",
+      "minimum": 0.0,
+      "description": "Cumulative forward active energy in Kilowatt-hours"
+    },
+    "power_factor": {
+      "type": "number",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "description": "Total power factor (cos phi)"
+    },
+    "frequency_hz": {
+      "type": "number",
+      "minimum": 40.0,
+      "maximum": 65.0,
+      "description": "AC mains frequency in Hertz (nominal 50.0 Hz)"
+    },
+    "zigbee_lqi": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255,
+      "description": "Zigbee / Mesh radio Link Quality Indicator"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["OK", "WARNING", "ERROR"],
+      "default": "OK",
+      "description": "Internal hardware self-diagnostic status"
+    }
+  },
+  "additionalProperties": false
+}

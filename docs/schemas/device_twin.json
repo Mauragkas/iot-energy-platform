@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DeviceTwin",
+  "description": "MongoDB device twin document describing static and configuration metadata",
+  "type": "object",
+  "required": [
+    "meter_id",
+    "firmware_version",
+    "zone",
+    "phase_type",
+    "nominal_voltage",
+    "thresholds",
+    "installed_at"
+  ],
+  "properties": {
+    "meter_id": {
+      "type": "string",
+      "pattern": "^MZ-3P-[0-9]{4}$"
+    },
+    "firmware_version": {
+      "type": "string"
+    },
+    "zone": {
+      "type": "string",
+      "enum": ["north", "south", "east", "west"]
+    },
+    "phase_type": {
+      "type": "string",
+      "enum": ["3P+N", "3P", "1P+N"]
+    },
+    "nominal_voltage": {
+      "type": "number",
+      "default": 230.0
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["voltage_min", "voltage_max", "active_power_kw_max", "power_factor_min"],
+      "properties": {
+        "voltage_min": { "type": "number", "default": 207.0 },
+        "voltage_max": { "type": "number", "default": 253.0 },
+        "active_power_kw_max": { "type": "number", "default": 25.0 },
+        "power_factor_min": { "type": "number", "default": 0.85 }
+      }
+    },
+    "location": {
+      "type": "object",
+      "required": ["lat", "lon"],
+      "properties": {
+        "lat": { "type": "number" },
+        "lon": { "type": "number" }
+      }
+    },
+    "installed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
