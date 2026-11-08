@@ -1,0 +1,30 @@
+# Rust
+target/
+**/*.rs.bk
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Data & volumes
+data/
+*.log
+*.mp4
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# K8s / Helm
+*.tgz
+k8s/charts/*/charts/
