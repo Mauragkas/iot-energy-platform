@@ -3,4 +3,5 @@ resolver = "2"
 members = [
     "services/ingestor-rs",
     "services/persister-rs",
+    "services/api-rs",
 ]
