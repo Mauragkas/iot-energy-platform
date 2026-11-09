@@ -8,7 +8,6 @@ Generates the provisioned Grafana dashboards for Module F:
 """
 
 import json
-import os
 from pathlib import Path
 
 OUT_DIR = Path("deploy/grafana/provisioning/dashboards/json")
