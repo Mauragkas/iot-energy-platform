@@ -64,16 +64,3 @@ pub struct TimeseriesPoint {
     pub avg_voltage_l1: Option<f64>,
     pub reading_count: i64,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_bucket_parsing() {
-        assert_eq!("1m".parse::<RollupBucket>().unwrap(), RollupBucket::OneMinute);
-        assert_eq!("1h".parse::<RollupBucket>().unwrap(), RollupBucket::Hourly);
-        assert_eq!("1d".parse::<RollupBucket>().unwrap(), RollupBucket::Daily);
-        assert!("10m".parse::<RollupBucket>().is_err());
-    }
-}

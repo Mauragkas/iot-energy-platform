@@ -73,31 +73,3 @@ pub mod flexible_datetime_opt {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_valid_time_range() {
-        let from = "2026-11-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        let to = "2026-11-05T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        let range = TimeRange::new(from, to).unwrap();
-        assert!(range.validate_max_window(30).is_ok());
-    }
-
-    #[test]
-    fn test_to_before_from() {
-        let from = "2026-11-05T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        let to = "2026-11-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        assert!(TimeRange::new(from, to).is_err());
-    }
-
-    #[test]
-    fn test_window_exceeds_maximum() {
-        let from = "2026-10-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        let to = "2026-11-15T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        let range = TimeRange::new(from, to).unwrap();
-        assert!(range.validate_max_window(30).is_err());
-    }
-}

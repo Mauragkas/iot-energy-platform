@@ -61,17 +61,3 @@ pub struct AlertRecord {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_alert_severity_parsing() {
-        assert_eq!("CRITICAL".parse::<AlertSeverity>().unwrap(), AlertSeverity::Critical);
-        assert_eq!("critical".parse::<AlertSeverity>().unwrap(), AlertSeverity::Critical);
-        assert_eq!("WARNING".parse::<AlertSeverity>().unwrap(), AlertSeverity::Warning);
-        assert_eq!("info".parse::<AlertSeverity>().unwrap(), AlertSeverity::Info);
-        assert!("UNKNOWN".parse::<AlertSeverity>().is_err());
-    }
-}

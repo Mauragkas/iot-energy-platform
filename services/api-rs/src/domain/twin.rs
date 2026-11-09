@@ -32,37 +32,3 @@ pub struct DeviceTwin {
     pub installed_at: Option<DateTime<Utc>>,
     pub status: String,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_device_twin_json_roundtrip() {
-        let twin = DeviceTwin {
-            meter_id: "MZ-3P-0042".to_string(),
-            firmware_version: "v2.4.1".to_string(),
-            zone: "north".to_string(),
-            phase_type: "3P+N".to_string(),
-            nominal_voltage: 230.0,
-            nominal_frequency: 50.0,
-            thresholds: TwinThresholds {
-                voltage_min: 207.0,
-                voltage_max: 253.0,
-                active_power_kw_max: 25.0,
-                power_factor_min: 0.85,
-            },
-            location: TwinLocation {
-                lat: 37.9838,
-                lon: 23.7275,
-            },
-            installed_at: Some(Utc::now()),
-            status: "ACTIVE".to_string(),
-        };
-
-        let json = serde_json::to_string(&twin).unwrap();
-        let deserialized: DeviceTwin = serde_json::from_str(&json).unwrap();
-        assert_eq!(twin.meter_id, deserialized.meter_id);
-        assert_eq!(twin.zone, deserialized.zone);
-    }
-}

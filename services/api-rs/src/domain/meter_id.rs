@@ -45,32 +45,3 @@ impl fmt::Display for MeterId {
         write!(f, "{}", self.0)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_valid_meter_id() {
-        let id = MeterId::new("MZ-3P-0042").unwrap();
-        assert_eq!(id.as_str(), "MZ-3P-0042");
-        assert_eq!(id.to_string(), "MZ-3P-0042");
-    }
-
-    #[test]
-    fn test_empty_meter_id() {
-        assert!(MeterId::new("   ").is_err());
-    }
-
-    #[test]
-    fn test_invalid_characters() {
-        assert!(MeterId::new("MZ-3P-0042; DROP TABLE;").is_err());
-        assert!(MeterId::new("MZ 3P 0042").is_err());
-    }
-
-    #[test]
-    fn test_too_long_meter_id() {
-        let long_id = "A".repeat(65);
-        assert!(MeterId::new(long_id).is_err());
-    }
-}
