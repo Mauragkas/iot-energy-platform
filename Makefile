@@ -38,17 +38,18 @@ clean:
 	rm -rf target/ .pytest_cache/ .ruff_cache/
 
 test:
-	@echo "==> Running Rust tests..."
-	@if [ -f Cargo.toml ]; then cargo test --all; fi
-	@echo "==> Running Python tests..."
-	@if [ -d simulator/tests ]; then pytest simulator/tests; fi
-	@if [ -d services/anomaly-worker-py/tests ]; then pytest services/anomaly-worker-py/tests; fi
+	@echo "==> Running Rust tests (Rust $(shell rustc --version))..."
+	@if [ -f Cargo.toml ]; then cargo test --workspace; fi
+	@echo "==> Running Python tests with uv..."
+	@if [ -d simulator/tests ]; then uv run pytest simulator/tests; fi
+	@if [ -d services/anomaly-worker-py/tests ]; then uv run pytest services/anomaly-worker-py/tests; fi
+	@if [ -d tests ]; then uv run pytest tests; fi
 
 lint:
-	@echo "==> Running Rust linter..."
-	@if [ -f Cargo.toml ]; then cargo clippy --all-targets -- -D warnings; fi
-	@echo "==> Running Python linter..."
-	@if command -v ruff &> /dev/null; then ruff check .; fi
+	@echo "==> Running Rust linter (clippy)..."
+	@if [ -f Cargo.toml ]; then cargo clippy --workspace --all-targets -- -D warnings; fi
+	@echo "==> Running Python linter with uv (ruff)..."
+	@if command -v uv &> /dev/null; then uv run ruff check .; elif command -v ruff &> /dev/null; then ruff check .; fi
 
 cluster-up:
 	@echo "==> Creating kind cluster..."
