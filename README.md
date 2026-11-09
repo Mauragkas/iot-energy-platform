@@ -12,10 +12,10 @@ Full specification: [docs/PROJECT.md](docs/PROJECT.md)
 | M1 Compose skeleton + simulator | completed |
 | M2 `ingestor-rs` | completed |
 | M3 TimescaleDB schema + persister | completed |
-| M4 `anomaly-worker-py` | in progress |
-| M5 `api-rs` | not started |
-| M6 Grafana dashboards | not started |
-| M7 kind cluster | not started |
+| M4 `anomaly-worker-py` | completed |
+| M5 `api-rs` | completed |
+| M6 Grafana dashboards | completed |
+| M7 kind cluster | in progress |
 | M8 Helm chart | not started |
 | M9 HPA demo | not started |
 | M10 Resilience / pod-kill demo | not started |
