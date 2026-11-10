@@ -1,0 +1,383 @@
+# Ingestion Bridge: ingestor-rs
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestor-rs
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/component: ingestor
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.ingestor.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingestor-rs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingestor-rs
+        app.kubernetes.io/component: ingestor
+        app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.ingestor.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: ingestor-rs
+          image: "{{ .Values.ingestor.image.repository }}:{{ .Values.ingestor.image.tag }}"
+          imagePullPolicy: {{ .Values.ingestor.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: metrics
+              containerPort: 8081
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-platform-config
+            - secretRef:
+                name: iot-platform-secrets
+          env:
+            - name: METRICS_PORT
+              value: "8081"
+          resources:
+            {{- toYaml .Values.ingestor.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+# Time-Series Persister: persister-rs
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: persister-rs
+  labels:
+    app.kubernetes.io/name: persister-rs
+    app.kubernetes.io/component: storage-persister
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.persister.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: persister-rs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: persister-rs
+        app.kubernetes.io/component: storage-persister
+        app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.persister.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: persister-rs
+          image: "{{ .Values.persister.image.repository }}:{{ .Values.persister.image.tag }}"
+          imagePullPolicy: {{ .Values.persister.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: metrics
+              containerPort: 8082
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-platform-config
+            - secretRef:
+                name: iot-platform-secrets
+          env:
+            - name: METRICS_PORT
+              value: "8082"
+          resources:
+            {{- toYaml .Values.persister.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+# Anomaly Detection Worker: anomaly-worker-py
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anomaly-worker-py
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/component: analytics
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.anomalyWorker.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: anomaly-worker-py
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: anomaly-worker-py
+        app.kubernetes.io/component: analytics
+        app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.anomalyWorker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: anomaly-worker-py
+          image: "{{ .Values.anomalyWorker.image.repository }}:{{ .Values.anomalyWorker.image.tag }}"
+          imagePullPolicy: {{ .Values.anomalyWorker.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: metrics
+              containerPort: 8083
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-platform-config
+            - secretRef:
+                name: iot-platform-secrets
+          env:
+            - name: METRICS_PORT
+              value: "8083"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: PYTHONPYCACHEPREFIX
+              value: /tmp/pycache
+          resources:
+            {{- toYaml .Values.anomalyWorker.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /metrics
+              port: 8083
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+# Backend REST & Metrics API: api-rs
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-rs
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-rs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-rs
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.api.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: api-rs
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-platform-config
+            - secretRef:
+                name: iot-platform-secrets
+          env:
+            - name: API_PORT
+              value: "8080"
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
