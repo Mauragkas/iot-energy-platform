@@ -28,7 +28,46 @@ pub struct DeviceTwin {
     pub nominal_frequency: f64,
     pub thresholds: TwinThresholds,
     pub location: TwinLocation,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_installed_at")]
     pub installed_at: Option<DateTime<Utc>>,
     pub status: String,
+}
+
+pub mod flexible_installed_at {
+    use super::*;
+    use serde::{Deserializer, Serializer};
+
+    pub fn serialize<S>(val: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        val.serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let b = bson::Bson::deserialize(deserializer)?;
+        match b {
+            bson::Bson::Null => Ok(None),
+            bson::Bson::DateTime(dt) => Ok(Some(dt.to_chrono())),
+            bson::Bson::String(s) => {
+                DateTime::parse_from_rfc3339(&s)
+                    .map(|dt| Some(dt.with_timezone(&Utc)))
+                    .map_err(serde::de::Error::custom)
+            }
+            bson::Bson::Int64(ms) => Ok(DateTime::from_timestamp_millis(ms)),
+            bson::Bson::Document(doc) => {
+                if let Some(bson::Bson::DateTime(dt)) = doc.get("$date") {
+                    Ok(Some(dt.to_chrono()))
+                } else if let Some(bson::Bson::Int64(ms)) = doc.get("$date") {
+                    Ok(DateTime::from_timestamp_millis(*ms))
+                } else {
+                    Ok(None)
+                }
+            }
+            _ => Ok(None),
+        }
+    }
 }

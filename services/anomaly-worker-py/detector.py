@@ -234,11 +234,6 @@ class FrequencyDeviationRule(AnomalyRule):
         return None
 
 
-try:
-    from engine import AnomalyEngine
-except ImportError:
-    from .engine import AnomalyEngine
-
 __all__ = [
     "AnomalyRule",
     "VoltageSagSwellRule",
@@ -246,5 +241,4 @@ __all__ = [
     "PhaseImbalanceRule",
     "LowPowerFactorRule",
     "FrequencyDeviationRule",
-    "AnomalyEngine",
 ]
