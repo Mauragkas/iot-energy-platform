@@ -1,0 +1,544 @@
+# 02-stateful-storage.yaml: StatefulSets and headless Services for stateful data layer
+# Services: TimescaleDB (PostgreSQL 16), Apache Kafka (KRaft), MongoDB 7.0, Eclipse Mosquitto 2.0
+# All StatefulSets use 10Gi volumeClaimTemplates with storageClassName: standard.
+
+---
+# =============================================================================
+# 1. TimescaleDB (PostgreSQL 16)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescaledb
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: timescaledb
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: database
+spec:
+  clusterIP: None
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+  selector:
+    app.kubernetes.io/name: timescaledb
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: timescaledb
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: timescaledb
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: database
+spec:
+  serviceName: timescaledb
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: timescaledb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: timescaledb
+        app.kubernetes.io/part-of: iot-energy-platform
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+        - name: timescaledb
+          image: timescale/timescaledb:latest-pg16
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgresql
+              containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: iot-platform-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: iot-platform-secrets
+                  key: postgres_password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: iot-platform-config
+                  key: TIMESCALE_DB
+            - name: PGDATA
+              value: /home/postgres/pgdata/data
+          volumeMounts:
+            - name: timescale-data
+              mountPath: /home/postgres/pgdata/data
+            - name: timescale-init
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U postgres -d iot_energy -h 127.0.0.1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U postgres -d iot_energy -h 127.0.0.1
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: timescale-init
+          configMap:
+            name: timescaledb-init
+  volumeClaimTemplates:
+    - metadata:
+        name: timescale-data
+        labels:
+          app.kubernetes.io/name: timescaledb
+          app.kubernetes.io/part-of: iot-energy-platform
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+# =============================================================================
+# 2. Apache Kafka (Confluent KRaft Mode)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: message-broker
+spec:
+  clusterIP: None
+  ports:
+    - name: client
+      port: 9092
+      targetPort: 9092
+    - name: controller
+      port: 29093
+      targetPort: 29093
+  selector:
+    app.kubernetes.io/name: kafka
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: message-broker
+spec:
+  clusterIP: None
+  ports:
+    - name: client
+      port: 9092
+      targetPort: 9092
+    - name: controller
+      port: 29093
+      targetPort: 29093
+  selector:
+    app.kubernetes.io/name: kafka
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: message-broker
+spec:
+  serviceName: kafka
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kafka
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kafka
+        app.kubernetes.io/part-of: iot-energy-platform
+        app.kubernetes.io/component: message-broker
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.5.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: client
+              containerPort: 9092
+            - name: controller
+              containerPort: 29093
+          env:
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka:9092"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: "1@127.0.0.1:29093"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_LOG_RETENTION_HOURS
+              value: "24"
+            - name: CLUSTER_ID
+              value: "MkU3OEVBNTcwNTJENDM2Qk"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - kafka-topics --bootstrap-server 127.0.0.1:9092 --list
+            initialDelaySeconds: 25
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - kafka-topics --bootstrap-server 127.0.0.1:9092 --list
+            initialDelaySeconds: 35
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-data
+        labels:
+          app.kubernetes.io/name: kafka
+          app.kubernetes.io/part-of: iot-energy-platform
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-init-topics
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: kafka-init-topics
+    app.kubernetes.io/part-of: iot-energy-platform
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kafka-init-topics
+        app.kubernetes.io/part-of: iot-energy-platform
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: kafka-init
+          image: confluentinc/cp-kafka:7.5.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for Kafka broker to accept connections..."
+              until kafka-topics --bootstrap-server kafka:9092 --list > /dev/null 2>&1; do
+                sleep 2
+              done
+              echo "Creating platform topics..."
+              kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.telemetry.raw --partitions 3 --replication-factor 1
+              kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.alerts --partitions 3 --replication-factor 1
+              echo "Topics initialized successfully:"
+              kafka-topics --bootstrap-server kafka:9092 --list
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+---
+# =============================================================================
+# 3. MongoDB 7.0
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: mongo
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: database
+spec:
+  clusterIP: None
+  ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+  selector:
+    app.kubernetes.io/name: mongo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: mongo
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: database
+spec:
+  serviceName: mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mongo
+        app.kubernetes.io/part-of: iot-energy-platform
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mongodb
+              containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: iot-platform-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: iot-platform-secrets
+                  key: mongo_password
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: iot-platform-config
+                  key: MONGO_DB
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+            - name: mongo-init
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mongosh --eval 'db.runCommand("ping").ok' localhost:27017/test --quiet
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mongosh --eval 'db.runCommand("ping").ok' localhost:27017/test --quiet
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: mongo-init
+          configMap:
+            name: mongo-init
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+        labels:
+          app.kubernetes.io/name: mongo
+          app.kubernetes.io/part-of: iot-energy-platform
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+# =============================================================================
+# 4. Eclipse Mosquitto 2.0
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: mqtt-broker
+spec:
+  clusterIP: None
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+  selector:
+    app.kubernetes.io/name: mosquitto
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto-service
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: mqtt-broker
+spec:
+  type: NodePort
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+      nodePort: 31883
+  selector:
+    app.kubernetes.io/name: mosquitto
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mosquitto
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/part-of: iot-energy-platform
+    app.kubernetes.io/component: mqtt-broker
+spec:
+  serviceName: mosquitto
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mosquitto
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mosquitto
+        app.kubernetes.io/part-of: iot-energy-platform
+        app.kubernetes.io/component: mqtt-broker
+    spec:
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mqtt
+              containerPort: 1883
+          volumeMounts:
+            - name: mosquitto-data
+              mountPath: /mosquitto/data
+            - name: mosquitto-config-volume
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
+          readinessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 5
+          livenessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: mosquitto-config-volume
+          configMap:
+            name: mosquitto-config
+  volumeClaimTemplates:
+    - metadata:
+        name: mosquitto-data
+        labels:
+          app.kubernetes.io/name: mosquitto
+          app.kubernetes.io/part-of: iot-energy-platform
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 10Gi
