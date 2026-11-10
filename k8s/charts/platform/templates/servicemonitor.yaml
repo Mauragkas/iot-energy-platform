@@ -1,0 +1,89 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ingestor-rs-monitor
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingestor-rs
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: persister-rs-monitor
+  labels:
+    app.kubernetes.io/name: persister-rs
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: persister-rs
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: anomaly-worker-monitor
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: anomaly-worker-py
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: api-rs-monitor
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-rs
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+{{- end }}

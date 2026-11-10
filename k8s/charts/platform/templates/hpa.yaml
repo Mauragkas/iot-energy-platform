@@ -1,0 +1,55 @@
+{{- if .Values.ingestor.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ingestor-rs-hpa
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/component: ingestor
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingestor-rs
+  minReplicas: {{ .Values.ingestor.hpa.minReplicas }}
+  maxReplicas: {{ .Values.ingestor.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.ingestor.hpa.targetCPU }}
+{{- end }}
+{{- if and .Values.ingestor.hpa.enabled .Values.anomalyWorker.hpa.enabled }}
+---
+{{- end }}
+{{- if .Values.anomalyWorker.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: anomaly-worker-hpa
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/component: analytics
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: anomaly-worker-py
+  minReplicas: {{ .Values.anomalyWorker.hpa.minReplicas }}
+  maxReplicas: {{ .Values.anomalyWorker.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.anomalyWorker.hpa.targetCPU }}
+{{- end }}

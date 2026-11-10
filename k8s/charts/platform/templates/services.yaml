@@ -1,0 +1,231 @@
+# TimescaleDB Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescaledb
+  labels:
+    app.kubernetes.io/name: timescaledb
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+  selector:
+    app.kubernetes.io/name: timescaledb
+---
+# Apache Kafka Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/component: message-broker
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - name: client
+      port: 9092
+      targetPort: 9092
+    - name: controller
+      port: 29093
+      targetPort: 29093
+  selector:
+    app.kubernetes.io/name: kafka
+---
+# Apache Kafka Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/component: message-broker
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - name: client
+      port: 9092
+      targetPort: 9092
+    - name: controller
+      port: 29093
+      targetPort: 29093
+  selector:
+    app.kubernetes.io/name: kafka
+---
+# MongoDB Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  labels:
+    app.kubernetes.io/name: mongo
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+  selector:
+    app.kubernetes.io/name: mongo
+---
+# Mosquitto Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/component: mqtt-broker
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+  selector:
+    app.kubernetes.io/name: mosquitto
+---
+# Mosquitto NodePort Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto-service
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/component: mqtt-broker
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: NodePort
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+      nodePort: {{ .Values.mosquitto.nodePort | default 31883 }}
+  selector:
+    app.kubernetes.io/name: mosquitto
+---
+# Ingestor ClusterIP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestor-rs
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/component: ingestor
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ingestor-rs
+  ports:
+    - name: metrics
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+---
+# Persister ClusterIP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: persister-rs
+  labels:
+    app.kubernetes.io/name: persister-rs
+    app.kubernetes.io/component: storage-persister
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: persister-rs
+  ports:
+    - name: metrics
+      port: 8082
+      targetPort: 8082
+      protocol: TCP
+---
+# Anomaly Worker ClusterIP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: anomaly-worker-py
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/component: analytics
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: anomaly-worker-py
+  ports:
+    - name: metrics
+      port: 8083
+      targetPort: 8083
+      protocol: TCP
+---
+# API ClusterIP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-rs
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: api-rs
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+# API Headless Service for Envoy STRICT_DNS
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-rs-headless
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: {{ default "iot-energy-platform" .Values.global.partOf }}
+    helm.sh/chart: {{ include "platform.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: api-rs
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
