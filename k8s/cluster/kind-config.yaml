@@ -1,0 +1,36 @@
+# kind-config.yaml: 3-node Kind cluster configuration for IoT Energy Platform
+# Control plane node has ingress label and extra port mappings for local access.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: iot-cluster
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      # Ingress HTTP (avoiding host port 80)
+      - containerPort: 80
+        hostPort: 8089
+        protocol: TCP
+      # Ingress HTTPS (avoiding host port 443)
+      - containerPort: 443
+        hostPort: 8443
+        protocol: TCP
+      # MQTT Broker direct access (avoiding conflict)
+      - containerPort: 1883
+        hostPort: 18883
+        protocol: TCP
+      # NodePort services (containerPort 30080 -> hostPort 30080)
+      - containerPort: 30080
+        hostPort: 30080
+        protocol: TCP
+      # Mosquitto NodePort (containerPort 31883 -> hostPort 31883)
+      - containerPort: 31883
+        hostPort: 31883
+        protocol: TCP
+  - role: worker
+  - role: worker

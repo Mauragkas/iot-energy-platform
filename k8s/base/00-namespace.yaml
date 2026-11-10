@@ -1,0 +1,18 @@
+# 00-namespace.yaml: Base namespaces for the IoT Smart-Energy Telemetry Platform
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: iot-platform
+  labels:
+    name: iot-platform
+    app.kubernetes.io/name: iot-platform
+    app.kubernetes.io/part-of: iot-energy-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/part-of: iot-energy-platform
