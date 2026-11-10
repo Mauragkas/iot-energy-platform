@@ -1,0 +1,60 @@
+# 05-hpa.yaml: HorizontalPodAutoscaler configurations for iot-platform
+# Configures autoscaling/v2 for ingestor-rs and anomaly-worker-py based on CPU utilization.
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ingestor-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/component: ingestion
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingestor-rs
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+    scaleDown:
+      stabilizationWindowSeconds: 60
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: anomaly-worker-py
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/component: analytics
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: anomaly-worker-py
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+    scaleDown:
+      stabilizationWindowSeconds: 60
