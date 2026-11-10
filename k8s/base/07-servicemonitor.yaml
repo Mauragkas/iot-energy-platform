@@ -1,0 +1,82 @@
+# 07-servicemonitor.yaml: Prometheus Operator ServiceMonitors
+# Configures Prometheus Operator to scrape metrics from microservices every 15s.
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ingestor-rs-monitor
+  namespace: iot-platform
+  labels:
+    release: prometheus
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingestor-rs
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: persister-rs-monitor
+  namespace: iot-platform
+  labels:
+    release: prometheus
+    app.kubernetes.io/name: persister-rs
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: persister-rs
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: anomaly-worker-monitor
+  namespace: iot-platform
+  labels:
+    release: prometheus
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: anomaly-worker-py
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: api-rs-monitor
+  namespace: iot-platform
+  labels:
+    release: prometheus
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-rs
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s

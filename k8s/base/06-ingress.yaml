@@ -1,0 +1,50 @@
+# 06-ingress.yaml: Ingress routing for the IoT Smart-Energy Platform
+# Routes external HTTP requests via NGINX Ingress controller to backend services.
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: iot-platform-ingress
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: iot-platform-ingress
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: iot-platform
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: api-rs
+                port:
+                  number: 8080
+          - path: /healthz
+            pathType: Prefix
+            backend:
+              service:
+                name: api-rs
+                port:
+                  number: 8080
+          - path: /readyz
+            pathType: Prefix
+            backend:
+              service:
+                name: api-rs
+                port:
+                  number: 8080
+          - path: /grpc
+            pathType: Prefix
+            backend:
+              service:
+                name: envoy
+                port:
+                  number: 10000

@@ -1,0 +1,515 @@
+# 03-deployments.yaml: Microservice Deployments & Companion Services
+# Enforces non-root security context, explicit resource requests/limits, and health probes.
+
+---
+# ==============================================================================
+# Ingestion Bridge: ingestor-rs
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestor-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/component: ingestion
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingestor-rs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingestor-rs
+        app.kubernetes.io/component: ingestion
+        app.kubernetes.io/part-of: iot-platform
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: ingestor-rs
+          image: iot-platform/ingestor-rs:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: metrics
+              containerPort: 8081
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-config
+                optional: true
+            - configMapRef:
+                name: iot-platform-config
+                optional: true
+            - secretRef:
+                name: iot-platform-secrets
+                optional: true
+          env:
+            - name: METRICS_PORT
+              value: "8081"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestor-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: ingestor-rs
+    app.kubernetes.io/component: ingestion
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ingestor-rs
+  ports:
+    - name: metrics
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+
+---
+# ==============================================================================
+# Time-Series Persister: persister-rs
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: persister-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: persister-rs
+    app.kubernetes.io/component: storage-persister
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: persister-rs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: persister-rs
+        app.kubernetes.io/component: storage-persister
+        app.kubernetes.io/part-of: iot-platform
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: persister-rs
+          image: iot-platform/persister-rs:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: metrics
+              containerPort: 8082
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-config
+                optional: true
+            - configMapRef:
+                name: iot-platform-config
+                optional: true
+            - secretRef:
+                name: iot-platform-secrets
+                optional: true
+          env:
+            - name: METRICS_PORT
+              value: "8082"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: persister-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: persister-rs
+    app.kubernetes.io/component: storage-persister
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: persister-rs
+  ports:
+    - name: metrics
+      port: 8082
+      targetPort: 8082
+      protocol: TCP
+
+---
+# ==============================================================================
+# Streaming Anomaly Detection Worker: anomaly-worker-py
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anomaly-worker-py
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/component: analytics
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: anomaly-worker-py
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: anomaly-worker-py
+        app.kubernetes.io/component: analytics
+        app.kubernetes.io/part-of: iot-platform
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: anomaly-worker-py
+          image: iot-platform/anomaly-worker-py:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: metrics
+              containerPort: 8083
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-config
+                optional: true
+            - configMapRef:
+                name: iot-platform-config
+                optional: true
+            - secretRef:
+                name: iot-platform-secrets
+                optional: true
+          env:
+            - name: METRICS_PORT
+              value: "8083"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: PYTHONPYCACHEPREFIX
+              value: "/tmp/pycache"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /metrics
+              port: 8083
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anomaly-worker-py
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: anomaly-worker-py
+    app.kubernetes.io/component: analytics
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: anomaly-worker-py
+  ports:
+    - name: metrics
+      port: 8083
+      targetPort: 8083
+      protocol: TCP
+
+---
+# ==============================================================================
+# Backend REST & Metrics API: api-rs
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-rs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-rs
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: iot-platform
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: api-rs
+          image: iot-platform/api-rs:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: iot-config
+                optional: true
+            - configMapRef:
+                name: iot-platform-config
+                optional: true
+            - secretRef:
+                name: iot-platform-secrets
+                optional: true
+          env:
+            - name: API_PORT
+              value: "8080"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+# Companion ClusterIP Service for api-rs
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-rs
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: api-rs
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+# Companion Headless Service for Envoy STRICT_DNS Pod Resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-rs-headless
+  namespace: iot-platform
+  labels:
+    app.kubernetes.io/name: api-rs
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: iot-platform
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: api-rs
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
