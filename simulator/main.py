@@ -23,10 +23,10 @@ _PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
-import paho.mqtt.client as mqtt  # noqa: E402
+import paho.mqtt.client as mqtt
 
-from simulator.anomalies import FaultInjector, FaultType, ReplayBuffer, apply_fault  # noqa: E402
-from simulator.meter import SmartMeter, create_fleet  # noqa: E402
+from simulator.anomalies import FaultInjector, FaultType, ReplayBuffer, apply_fault
+from simulator.meter import SmartMeter, create_fleet
 
 # Configure logging
 logging.basicConfig(
