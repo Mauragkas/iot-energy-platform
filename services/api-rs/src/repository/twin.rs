@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
-use crate::domain::DeviceTwin;
 use super::error::RepositoryError;
+use crate::domain::DeviceTwin;
 
 #[async_trait]
 pub trait TwinRepository: Send + Sync {
@@ -13,8 +13,5 @@ pub trait TwinRepository: Send + Sync {
     ) -> Result<Vec<DeviceTwin>, RepositoryError>;
 
     /// Fetches a single device twin by meter_id.
-    async fn get_twin(
-        &self,
-        meter_id: &str,
-    ) -> Result<Option<DeviceTwin>, RepositoryError>;
+    async fn get_twin(&self, meter_id: &str) -> Result<Option<DeviceTwin>, RepositoryError>;
 }

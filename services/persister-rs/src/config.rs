@@ -23,7 +23,8 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Self {
-        let kafka_brokers = env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".to_string());
+        let kafka_brokers =
+            env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".to_string());
         let kafka_topic = env::var("KAFKA_TELEMETRY_TOPIC")
             .or_else(|_| env::var("KAFKA_TOPIC"))
             .unwrap_or_else(|_| "iot.telemetry.raw".to_string());

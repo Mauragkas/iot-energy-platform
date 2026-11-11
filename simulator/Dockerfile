@@ -8,12 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app
 
 # Install runtime dependencies
-COPY simulator/requirements.txt /app/requirements.txt
+COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy simulator package and schema definitions
-COPY simulator /app/simulator
-COPY docs/schemas /app/docs/schemas
+# Copy simulator package
+COPY . /app/simulator
 
 # Run simulator CLI
 ENTRYPOINT ["python", "-m", "simulator.main"]

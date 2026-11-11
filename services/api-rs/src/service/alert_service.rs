@@ -1,10 +1,10 @@
-use std::sync::Arc;
 use chrono::{DateTime, Utc};
+use std::sync::Arc;
 
-use crate::domain::{AlertRecord, AlertSeverity};
-use crate::repository::AlertRepository;
 use super::error::ServiceError;
 use super::meter_service::{DEFAULT_PAGINATION_LIMIT, MAX_PAGINATION_LIMIT};
+use crate::domain::{AlertRecord, AlertSeverity};
+use crate::repository::AlertRepository;
 
 pub struct AlertService {
     alert_repo: Arc<dyn AlertRepository>,

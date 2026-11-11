@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use serde::Serialize;
+use std::sync::Arc;
 
-use crate::repository::HealthRepository;
 use super::error::ServiceError;
+use crate::repository::HealthRepository;
 
 #[derive(Debug, Serialize)]
 pub struct LivenessResponse {

@@ -2,9 +2,9 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use deadpool_postgres::Pool;
 
-use crate::domain::AlertRecord;
 use super::alert::AlertRepository;
 use super::error::RepositoryError;
+use crate::domain::AlertRecord;
 
 pub struct TimescaleAlertRepository {
     pool: Pool,

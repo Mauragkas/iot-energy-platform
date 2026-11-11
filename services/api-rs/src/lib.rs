@@ -5,10 +5,10 @@ pub mod repository;
 pub mod routes;
 pub mod service;
 
-use std::sync::Arc;
 use actix_web::body::BoxBody;
 use actix_web::dev::{Service as _, ServiceFactory, ServiceRequest, ServiceResponse};
 use actix_web::{web, App, Error};
+use std::sync::Arc;
 
 use crate::metrics::record_http_request;
 use crate::service::{AlertService, HealthService, MeterService};
@@ -35,7 +35,9 @@ pub fn build_app(
         .wrap_fn(|req, srv| {
             let start = std::time::Instant::now();
             let method = req.method().to_string();
-            let path = req.match_pattern().unwrap_or_else(|| req.path().to_string());
+            let path = req
+                .match_pattern()
+                .unwrap_or_else(|| req.path().to_string());
             let fut = srv.call(req);
             async move {
                 let res: ServiceResponse<BoxBody> = fut.await?;

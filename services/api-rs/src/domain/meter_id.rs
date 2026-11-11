@@ -1,5 +1,5 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use super::error::DomainError;
 
@@ -21,7 +21,10 @@ impl MeterId {
                 "Meter ID exceeds maximum allowed length of 64 characters".to_string(),
             ));
         }
-        if !trimmed.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.') {
+        if !trimmed
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
+        {
             return Err(DomainError::InvalidMeterId(
                 "Meter ID contains invalid characters; only alphanumeric, '-', '_', '.' are permitted".to_string(),
             ));

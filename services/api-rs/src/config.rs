@@ -1,7 +1,7 @@
-use std::str::FromStr;
 use deadpool_postgres::{Manager, Pool, Runtime};
 use mongodb::options::ClientOptions;
 use mongodb::Client;
+use std::str::FromStr;
 use tokio_postgres::NoTls;
 use tracing::info;
 
@@ -124,7 +124,9 @@ impl Config {
         Ok(pool)
     }
 
-    pub async fn create_mongo_client(&self) -> Result<Client, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn create_mongo_client(
+        &self,
+    ) -> Result<Client, Box<dyn std::error::Error + Send + Sync>> {
         let uri = if let Some(ref uri) = self.mongo_uri {
             info!("Configuring MongoDB client from MONGO_URI");
             uri.clone()

@@ -13,7 +13,9 @@ pub use alert::AlertRepository;
 pub use database_health::DatabaseHealthRepository;
 pub use error::RepositoryError;
 pub use health::HealthRepository;
-pub use mock::{MockAlertRepository, MockHealthRepository, MockTimeseriesRepository, MockTwinRepository};
+pub use mock::{
+    MockAlertRepository, MockHealthRepository, MockTimeseriesRepository, MockTwinRepository,
+};
 pub use mongo_twin::MongoTwinRepository;
 pub use postgres_alert::TimescaleAlertRepository;
 pub use postgres_timeseries::TimescaleTimeseriesRepository;

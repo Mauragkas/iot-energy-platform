@@ -63,11 +63,13 @@ impl TelemetryPublisher for KafkaPublisher {
         payload: &'a str,
     ) -> Pin<Box<dyn Future<Output = Result<(), String>> + Send + 'a>> {
         Box::pin(async move {
-            let record = FutureRecord::to(&self.topic)
-                .key(key)
-                .payload(payload);
+            let record = FutureRecord::to(&self.topic).key(key).payload(payload);
 
-            match self.producer.send(record, Timeout::After(Duration::from_secs(5))).await {
+            match self
+                .producer
+                .send(record, Timeout::After(Duration::from_secs(5)))
+                .await
+            {
                 Ok(_) => Ok(()),
                 Err((kafka_err, _)) => Err(kafka_err.to_string()),
             }

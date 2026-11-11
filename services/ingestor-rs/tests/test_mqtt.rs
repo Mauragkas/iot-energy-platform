@@ -43,10 +43,16 @@ async fn test_process_duplicate_message() {
 
     let json = sample_json("MZ-3P-0042", "2026-11-12T15:00:00Z", 230.0);
     let outcome1 = process_message(json.as_bytes(), &dedup, &mock_pub).await;
-    assert_eq!(outcome1, ProcessOutcome::Published("MZ-3P-0042".to_string()));
+    assert_eq!(
+        outcome1,
+        ProcessOutcome::Published("MZ-3P-0042".to_string())
+    );
 
     let outcome2 = process_message(json.as_bytes(), &dedup, &mock_pub).await;
-    assert_eq!(outcome2, ProcessOutcome::Duplicate("MZ-3P-0042".to_string()));
+    assert_eq!(
+        outcome2,
+        ProcessOutcome::Duplicate("MZ-3P-0042".to_string())
+    );
 
     // Published messages count should still be 1
     let sent = mock_pub.messages.lock().unwrap();

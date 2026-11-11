@@ -1,7 +1,7 @@
-use std::sync::Arc;
 use actix_web::test::{self, TestRequest};
 use chrono::{DateTime, Duration, Utc};
 use serde_json::Value;
+use std::sync::Arc;
 
 use api_rs::build_app;
 use api_rs::domain::{
@@ -10,9 +10,7 @@ use api_rs::domain::{
 use api_rs::repository::{
     MockAlertRepository, MockHealthRepository, MockTimeseriesRepository, MockTwinRepository,
 };
-use api_rs::service::{
-    AlertService, HealthService, MeterService, MAX_PAGINATION_LIMIT,
-};
+use api_rs::service::{AlertService, HealthService, MeterService, MAX_PAGINATION_LIMIT};
 
 fn sample_twin(id: &str, zone: &str) -> DeviceTwin {
     DeviceTwin {
@@ -187,7 +185,9 @@ async fn test_meters_list_and_filter() {
     assert!(north_twins.iter().all(|t| t.zone == "north"));
 
     // Limit parameter
-    let req = TestRequest::get().uri("/api/v1/meters?limit=1").to_request();
+    let req = TestRequest::get()
+        .uri("/api/v1/meters?limit=1")
+        .to_request();
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), 200);
     let limited: Vec<DeviceTwin> = test::read_body_json(resp).await;
@@ -206,7 +206,9 @@ async fn test_meters_pagination_capping() {
     let app = test::init_service(build_app(m_svc, a_svc, h_svc)).await;
 
     // Query with excessive limit (e.g. 5000) should be accepted and capped at MAX_PAGINATION_LIMIT
-    let req = TestRequest::get().uri("/api/v1/meters?limit=5000").to_request();
+    let req = TestRequest::get()
+        .uri("/api/v1/meters?limit=5000")
+        .to_request();
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), 200);
     let list: Vec<DeviceTwin> = test::read_body_json(resp).await;
@@ -338,13 +340,15 @@ async fn test_consumption_query_and_validation() {
     let to = "2026-11-05T00:00:00Z".parse::<DateTime<Utc>>().unwrap();
 
     let mut fixture = TestFixture::new();
-    fixture.timeseries_repo = fixture.timeseries_repo.with_consumption(ConsumptionResponse {
-        meter_id: "MZ-3P-0042".to_string(),
-        from: Some(from),
-        to: Some(to),
-        total_consumption_kwh: 48.6,
-        reading_count: 5760,
-    });
+    fixture.timeseries_repo = fixture
+        .timeseries_repo
+        .with_consumption(ConsumptionResponse {
+            meter_id: "MZ-3P-0042".to_string(),
+            from: Some(from),
+            to: Some(to),
+            total_consumption_kwh: 48.6,
+            reading_count: 5760,
+        });
 
     let (m_svc, a_svc, h_svc, _) = fixture.into_services();
     let app = test::init_service(build_app(m_svc, a_svc, h_svc)).await;

@@ -23,10 +23,10 @@ _PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt  # noqa: E402
 
-from simulator.anomalies import FaultInjector, FaultType, ReplayBuffer, apply_fault
-from simulator.meter import SmartMeter, create_fleet
+from simulator.anomalies import FaultInjector, FaultType, ReplayBuffer, apply_fault  # noqa: E402
+from simulator.meter import SmartMeter, create_fleet  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -108,7 +108,11 @@ class SimulatorRunner:
 
         # Initialize meter fleet
         self.meters: list[SmartMeter] = create_fleet(count=args.meters)
-        logger.info("Initialized fleet of %d smart meters (MZ-3P-0001 .. MZ-3P-%04d)", len(self.meters), len(self.meters))
+        logger.info(
+            "Initialized fleet of %d smart meters (MZ-3P-0001 .. MZ-3P-%04d)",
+            len(self.meters),
+            len(self.meters),
+        )
 
         # Fault injection setup (~5% of meters designated for anomalies)
         self.fault_injector = FaultInjector(fault_probability=0.05)
@@ -121,17 +125,22 @@ class SimulatorRunner:
             logger.info(
                 "Anomaly injection enabled on %d meters (~5%%): %s",
                 len(self.anomalous_meter_ids),
-                ", ".join(sorted(self.anomalous_meter_ids)[:5]) + ("..." if len(self.anomalous_meter_ids) > 5 else ""),
+                ", ".join(sorted(self.anomalous_meter_ids)[:5])
+                + ("..." if len(self.anomalous_meter_ids) > 5 else ""),
             )
 
         # Offline replay buffer setup (simulates a gateway holding 30s of packets)
         self.replay_buffer: ReplayBuffer | None = None
         self.replay_meter_ids: set[str] = set()
         if args.replay_offline:
-            self.replay_buffer = ReplayBuffer(buffer_duration_seconds=30.0, duplicate_ratio=0.20)
+            self.replay_buffer = ReplayBuffer(
+                buffer_duration_seconds=30.0, duplicate_ratio=0.20
+            )
             # Assign first ~10% of meters (or at least 1) to this offline gateway
             num_replay_meters = max(1, min(50, int(len(self.meters) * 0.10)))
-            self.replay_meter_ids = {m.meter_id for m in self.meters[:num_replay_meters]}
+            self.replay_meter_ids = {
+                m.meter_id for m in self.meters[:num_replay_meters]
+            }
             logger.info(
                 "Offline replay buffer active for gateway managing %d meters (30s window, burst with duplicates)",
                 len(self.replay_meter_ids),
@@ -159,7 +168,12 @@ class SimulatorRunner:
     ) -> None:
         """Handle MQTT connection established callback."""
         if reason_code == 0:
-            logger.info("Connected to MQTT v5 broker at %s:%d (reason: %s)", self.args.host, self.args.port, reason_code)
+            logger.info(
+                "Connected to MQTT v5 broker at %s:%d (reason: %s)",
+                self.args.host,
+                self.args.port,
+                reason_code,
+            )
         else:
             logger.warning("Failed to connect to MQTT broker: reason %s", reason_code)
 
@@ -173,7 +187,10 @@ class SimulatorRunner:
     ) -> None:
         """Handle MQTT disconnect callback."""
         if self.running:
-            logger.warning("Disconnected from MQTT broker: reason %s. Will auto-reconnect.", reason_code)
+            logger.warning(
+                "Disconnected from MQTT broker: reason %s. Will auto-reconnect.",
+                reason_code,
+            )
 
     def connect(self) -> None:
         """Connect to MQTT broker and start background network loop."""
@@ -181,7 +198,12 @@ class SimulatorRunner:
             self.client.connect(self.args.host, self.args.port, keepalive=60)
             self.client.loop_start()
         except Exception as exc:
-            logger.error("Could not connect to MQTT broker %s:%d: %s", self.args.host, self.args.port, exc)
+            logger.error(
+                "Could not connect to MQTT broker %s:%d: %s",
+                self.args.host,
+                self.args.port,
+                exc,
+            )
             raise
 
     def disconnect(self) -> None:
@@ -258,7 +280,10 @@ class SimulatorRunner:
             loop_now = time.time()
 
             # Check duration limit
-            if self.args.duration is not None and (loop_now - start_time) >= self.args.duration:
+            if (
+                self.args.duration is not None
+                and (loop_now - start_time) >= self.args.duration
+            ):
                 logger.info("Specified duration of %.1fs reached", self.args.duration)
                 break
 
@@ -323,7 +348,11 @@ class SimulatorRunner:
             target_msg_per_sec = len(self.meters) * self.args.rate
 
         target_interval = 1.0 / max(0.1, target_msg_per_sec)
-        logger.info("Load mode target throughput: %.1f msg/s (interval %.5fs)", target_msg_per_sec, target_interval)
+        logger.info(
+            "Load mode target throughput: %.1f msg/s (interval %.5fs)",
+            target_msg_per_sec,
+            target_interval,
+        )
 
         meter_idx = 0
         num_meters = len(self.meters)
@@ -332,7 +361,10 @@ class SimulatorRunner:
         while self.running:
             loop_now = time.time()
 
-            if self.args.duration is not None and (loop_now - start_time) >= self.args.duration:
+            if (
+                self.args.duration is not None
+                and (loop_now - start_time) >= self.args.duration
+            ):
                 logger.info("Specified duration of %.1fs reached", self.args.duration)
                 break
 
@@ -340,7 +372,9 @@ class SimulatorRunner:
             meter_idx = (meter_idx + 1) % num_meters
 
             # Rapid synthetic reading
-            reading = meter.generate_reading(datetime.now(UTC), override_delta_seconds=target_interval)
+            reading = meter.generate_reading(
+                datetime.now(UTC), override_delta_seconds=target_interval
+            )
 
             if meter.meter_id in self.anomalous_meter_ids:
                 reading = apply_fault(reading, FaultType.DEMAND_SPIKE)

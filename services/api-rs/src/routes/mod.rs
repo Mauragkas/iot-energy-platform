@@ -3,8 +3,8 @@ pub mod health;
 pub mod meters;
 pub mod metrics;
 
-use actix_web::{web, HttpResponse};
 use crate::service::ErrorResponse;
+use actix_web::{web, HttpResponse};
 
 pub fn configure_routes(cfg: &mut web::ServiceConfig) {
     let query_config = web::QueryConfig::default().error_handler(|err, _req| {
@@ -38,8 +38,14 @@ pub fn configure_routes(cfg: &mut web::ServiceConfig) {
             web::scope("/api/v1")
                 .route("/meters", web::get().to(meters::list_meters))
                 .route("/meters/{id}", web::get().to(meters::get_meter))
-                .route("/meters/{id}/timeseries", web::get().to(meters::query_timeseries))
-                .route("/meters/{id}/consumption", web::get().to(meters::query_consumption))
+                .route(
+                    "/meters/{id}/timeseries",
+                    web::get().to(meters::query_timeseries),
+                )
+                .route(
+                    "/meters/{id}/consumption",
+                    web::get().to(meters::query_consumption),
+                )
                 .route("/alerts", web::get().to(alerts::list_alerts)),
         );
 }

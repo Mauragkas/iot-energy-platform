@@ -71,11 +71,9 @@ pub fn configure_routes(cfg: &mut web::ServiceConfig) {
 
 /// Spawns the Actix-web server hosting `/metrics` and `/healthz` on the given port.
 pub fn create_metrics_server(port: u16) -> Result<actix_web::dev::Server, std::io::Error> {
-    let server = HttpServer::new(|| {
-        App::new().configure(configure_routes)
-    })
-    .bind(("0.0.0.0", port))?
-    .run();
+    let server = HttpServer::new(|| App::new().configure(configure_routes))
+        .bind(("0.0.0.0", port))?
+        .run();
 
     Ok(server)
 }

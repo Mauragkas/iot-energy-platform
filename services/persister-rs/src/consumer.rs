@@ -1,17 +1,17 @@
-use std::collections::HashMap;
-use std::time::{Duration, Instant};
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use rdkafka::topic_partition_list::{Offset, TopicPartitionList};
+use std::collections::HashMap;
+use std::time::{Duration, Instant};
 use tokio::sync::watch;
 use tracing::{error, info, warn};
 
 use crate::config::Config;
 use crate::db::{self, DbPool};
 use crate::metrics::{
-    TELEMETRY_PERSISTED_RECORDS, TELEMETRY_PERSIST_BATCHES,
-    TELEMETRY_PERSIST_BATCH_DURATION, TELEMETRY_PERSIST_ERRORS,
+    TELEMETRY_PERSISTED_RECORDS, TELEMETRY_PERSIST_BATCHES, TELEMETRY_PERSIST_BATCH_DURATION,
+    TELEMETRY_PERSIST_ERRORS,
 };
 use crate::model::TelemetryReading;
 
@@ -27,7 +27,13 @@ impl BatchBuffer {
         Self::default()
     }
 
-    pub fn push_reading(&mut self, reading: TelemetryReading, topic: &str, partition: i32, offset: i64) {
+    pub fn push_reading(
+        &mut self,
+        reading: TelemetryReading,
+        topic: &str,
+        partition: i32,
+        offset: i64,
+    ) {
         self.readings.push(reading);
         self.track_offset(topic, partition, offset);
     }

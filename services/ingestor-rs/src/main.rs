@@ -34,7 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .and_then(|c| c.parse().ok())
         .unwrap_or(DEFAULT_CACHE_CAPACITY);
 
-    let kafka_brokers = std::env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".to_string());
+    let kafka_brokers =
+        std::env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".to_string());
     let kafka_topic =
         std::env::var("KAFKA_TELEMETRY_TOPIC").unwrap_or_else(|_| "iot.telemetry.raw".to_string());
 
@@ -67,7 +68,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let metrics_server = create_metrics_server(metrics_port)?;
     let server_handle = metrics_server.handle();
     let metrics_task = tokio::spawn(metrics_server);
-    info!("Metrics server running on http://0.0.0.0:{}/metrics and /healthz", metrics_port);
+    info!(
+        "Metrics server running on http://0.0.0.0:{}/metrics and /healthz",
+        metrics_port
+    );
 
     // 6. Shutdown coordination channels
     let (shutdown_tx, shutdown_rx) = tokio::sync::watch::channel(false);
@@ -106,7 +110,8 @@ async fn wait_for_shutdown_signal() {
     #[cfg(unix)]
     {
         use tokio::signal::unix::{signal, SignalKind};
-        let mut sigterm = signal(SignalKind::terminate()).expect("Failed to register SIGTERM handler");
+        let mut sigterm =
+            signal(SignalKind::terminate()).expect("Failed to register SIGTERM handler");
         tokio::select! {
             _ = tokio::signal::ctrl_c() => {
                 info!("Received SIGINT (Ctrl+C)");

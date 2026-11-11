@@ -83,7 +83,10 @@ fn test_rejects_unknown_fields() {
     }"#;
 
     let result: Result<SmartMeterTelemetry, _> = serde_json::from_str(json_data);
-    assert!(result.is_err(), "Should deny unknown fields according to schema");
+    assert!(
+        result.is_err(),
+        "Should deny unknown fields according to schema"
+    );
 }
 
 #[test]

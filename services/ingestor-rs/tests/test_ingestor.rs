@@ -69,19 +69,40 @@ async fn test_ingestor_pipeline_valid_and_duplicate() {
 
     // 1. Process first packet
     let outcome1 = process_message(payload.as_bytes(), &dedup, &publisher).await;
-    assert_eq!(outcome1, ProcessOutcome::Published("MZ-3P-1234".to_string()));
+    assert_eq!(
+        outcome1,
+        ProcessOutcome::Published("MZ-3P-1234".to_string())
+    );
 
-    assert_eq!(TELEMETRY_MESSAGES_RECEIVED_TOTAL.get(), initial_received + 1);
-    assert_eq!(TELEMETRY_MESSAGES_PUBLISHED_TOTAL.get(), initial_published + 1);
+    assert_eq!(
+        TELEMETRY_MESSAGES_RECEIVED_TOTAL.get(),
+        initial_received + 1
+    );
+    assert_eq!(
+        TELEMETRY_MESSAGES_PUBLISHED_TOTAL.get(),
+        initial_published + 1
+    );
     assert_eq!(TELEMETRY_MESSAGES_DEDUPLICATED_TOTAL.get(), initial_deduped);
 
     // 2. Process duplicate packet
     let outcome2 = process_message(payload.as_bytes(), &dedup, &publisher).await;
-    assert_eq!(outcome2, ProcessOutcome::Duplicate("MZ-3P-1234".to_string()));
+    assert_eq!(
+        outcome2,
+        ProcessOutcome::Duplicate("MZ-3P-1234".to_string())
+    );
 
-    assert_eq!(TELEMETRY_MESSAGES_RECEIVED_TOTAL.get(), initial_received + 2);
-    assert_eq!(TELEMETRY_MESSAGES_PUBLISHED_TOTAL.get(), initial_published + 1);
-    assert_eq!(TELEMETRY_MESSAGES_DEDUPLICATED_TOTAL.get(), initial_deduped + 1);
+    assert_eq!(
+        TELEMETRY_MESSAGES_RECEIVED_TOTAL.get(),
+        initial_received + 2
+    );
+    assert_eq!(
+        TELEMETRY_MESSAGES_PUBLISHED_TOTAL.get(),
+        initial_published + 1
+    );
+    assert_eq!(
+        TELEMETRY_MESSAGES_DEDUPLICATED_TOTAL.get(),
+        initial_deduped + 1
+    );
 
     let messages = publisher.published.lock().unwrap();
     assert_eq!(messages.len(), 1);
@@ -134,8 +155,14 @@ async fn test_ingestor_pipeline_rejects_corrupt_and_invalid() {
     let outcome3 = process_message(bad_id.as_bytes(), &dedup, &publisher).await;
     assert!(matches!(outcome3, ProcessOutcome::Rejected(_)));
 
-    assert_eq!(TELEMETRY_MESSAGES_RECEIVED_TOTAL.get(), initial_received + 3);
-    assert_eq!(TELEMETRY_MESSAGES_REJECTED_TOTAL.get(), initial_rejected + 3);
+    assert_eq!(
+        TELEMETRY_MESSAGES_RECEIVED_TOTAL.get(),
+        initial_received + 3
+    );
+    assert_eq!(
+        TELEMETRY_MESSAGES_REJECTED_TOTAL.get(),
+        initial_rejected + 3
+    );
 }
 
 #[test]

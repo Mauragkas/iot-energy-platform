@@ -13,20 +13,17 @@ lazy_static! {
         "Total number of telemetry records successfully persisted into TimescaleDB"
     )
     .expect("failed to register telemetry_persisted_records_total");
-
     pub static ref TELEMETRY_PERSIST_BATCH_DURATION: Histogram = register_histogram!(
         "telemetry_persist_batch_duration_seconds",
         "Duration of batch insert operations into TimescaleDB in seconds",
         vec![0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]
     )
     .expect("failed to register telemetry_persist_batch_duration_seconds");
-
     pub static ref TELEMETRY_PERSIST_BATCHES: IntCounter = register_int_counter!(
         "telemetry_persist_batches_total",
         "Total number of batch insertions attempted"
     )
     .expect("failed to register telemetry_persist_batches_total");
-
     pub static ref TELEMETRY_PERSIST_ERRORS: IntCounter = register_int_counter!(
         "telemetry_persist_errors_total",
         "Total number of persister errors (e.g. deserialization, database write failure)"
@@ -74,6 +71,9 @@ pub fn start_metrics_server(
     .workers(2)
     .run();
 
-    info!(host, port, "Metrics and health HTTP server configured on {host}:{port}");
+    info!(
+        host,
+        port, "Metrics and health HTTP server configured on {host}:{port}"
+    );
     Ok(server)
 }

@@ -1,6 +1,6 @@
-use std::str::FromStr;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 use super::error::DomainError;
 

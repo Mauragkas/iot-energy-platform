@@ -49,9 +49,13 @@ fn test_payload_deserialization_edge_cases() {
         "frequency_hz": 50.0
     }"#;
 
-    let parsed = TelemetryReading::from_json_str(json_minimal).expect("should parse minimal payload");
+    let parsed =
+        TelemetryReading::from_json_str(json_minimal).expect("should parse minimal payload");
     assert_eq!(parsed.meter_id, "meter_single_phase");
-    assert_eq!(parsed.time, Utc.with_ymd_and_hms(2026, 11, 12, 15, 0, 0).unwrap());
+    assert_eq!(
+        parsed.time,
+        Utc.with_ymd_and_hms(2026, 11, 12, 15, 0, 0).unwrap()
+    );
     assert_eq!(parsed.voltage_l2, 0.0);
     assert_eq!(parsed.voltage_l3, 0.0);
     assert_eq!(parsed.current_l2, 0.0);
@@ -91,8 +95,20 @@ fn test_micro_batch_buffer_partition_tracking() {
     buffer.track_offset("iot.telemetry.raw", 1, 40);
 
     assert_eq!(buffer.len(), 2);
-    assert_eq!(*buffer.offsets.get(&("iot.telemetry.raw".to_string(), 0)).unwrap(), 11);
-    assert_eq!(*buffer.offsets.get(&("iot.telemetry.raw".to_string(), 1)).unwrap(), 40);
+    assert_eq!(
+        *buffer
+            .offsets
+            .get(&("iot.telemetry.raw".to_string(), 0))
+            .unwrap(),
+        11
+    );
+    assert_eq!(
+        *buffer
+            .offsets
+            .get(&("iot.telemetry.raw".to_string(), 1))
+            .unwrap(),
+        40
+    );
 }
 
 #[test]
