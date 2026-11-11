@@ -304,7 +304,7 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  meter_id AS metric,\n  AVG(active_power_kw) AS \"Active Power (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
+                        "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  meter_id AS metric,\n  AVG(active_power_kw) AS \"Active Power (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
                         "refId": "A",
                     }
                 ],
@@ -416,7 +416,7 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(voltage_l1) AS \"V_L1 (Phase 1)\",\n  AVG(voltage_l2) AS \"V_L2 (Phase 2)\",\n  AVG(voltage_l3) AS \"V_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
+                        "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  AVG(voltage_l1) AS \"V_L1 (Phase 1)\",\n  AVG(voltage_l2) AS \"V_L2 (Phase 2)\",\n  AVG(voltage_l3) AS \"V_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
                         "refId": "A",
                     }
                 ],
@@ -560,7 +560,7 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(current_l1) AS \"I_L1 (Phase 1)\",\n  AVG(current_l2) AS \"I_L2 (Phase 2)\",\n  AVG(current_l3) AS \"I_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
+                        "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  AVG(current_l1) AS \"I_L1 (Phase 1)\",\n  AVG(current_l2) AS \"I_L2 (Phase 2)\",\n  AVG(current_l3) AS \"I_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
                         "refId": "A",
                     }
                 ],
@@ -615,7 +615,7 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  meter_id AS metric,\n  AVG(power_factor) AS value\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
+                        "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  meter_id AS metric,\n  AVG(power_factor) AS value\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
                         "refId": "A",
                     }
                 ],
@@ -667,7 +667,7 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(frequency_hz) AS \"Frequency (Hz)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
+                        "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  AVG(frequency_hz) AS \"Frequency (Hz)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
                         "refId": "A",
                     }
                 ],
@@ -1932,7 +1932,7 @@ def make_grid_anomalies_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  alert_type AS metric,\n  COUNT(*) AS \"count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
+                        "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '10s' ELSE '$interval' END)::interval, time) AS \"time\",\n  alert_type AS metric,\n  COUNT(*) AS \"count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
                         "refId": "A",
                     }
                 ],

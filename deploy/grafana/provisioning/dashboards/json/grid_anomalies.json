@@ -607,7 +607,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  alert_type AS metric,\n  COUNT(*) AS \"count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '10s' ELSE '$interval' END)::interval, time) AS \"time\",\n  alert_type AS metric,\n  COUNT(*) AS \"count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
           "refId": "A"
         }
       ],

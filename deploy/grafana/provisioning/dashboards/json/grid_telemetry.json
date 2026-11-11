@@ -457,7 +457,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  meter_id AS metric,\n  AVG(active_power_kw) AS \"Active Power (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  meter_id AS metric,\n  AVG(active_power_kw) AS \"Active Power (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
           "refId": "A"
         }
       ],
@@ -542,7 +542,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  SUM(active_power_kw) AS \"Total Fleet Load (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\nGROUP BY 1\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  SUM(active_power_kw) AS \"Total Fleet Load (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\nGROUP BY 1\nORDER BY 1;",
           "refId": "A"
         }
       ],
@@ -623,7 +623,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(voltage_l1) AS \"V_L1 (Phase 1)\",\n  AVG(voltage_l2) AS \"V_L2 (Phase 2)\",\n  AVG(voltage_l3) AS \"V_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  AVG(voltage_l1) AS \"V_L1 (Phase 1)\",\n  AVG(voltage_l2) AS \"V_L2 (Phase 2)\",\n  AVG(voltage_l3) AS \"V_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
           "refId": "A"
         }
       ],
@@ -857,7 +857,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(current_l1) AS \"I_L1 (Phase 1)\",\n  AVG(current_l2) AS \"I_L2 (Phase 2)\",\n  AVG(current_l3) AS \"I_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  AVG(current_l1) AS \"I_L1 (Phase 1)\",\n  AVG(current_l2) AS \"I_L2 (Phase 2)\",\n  AVG(current_l3) AS \"I_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
           "refId": "A"
         }
       ],
@@ -937,7 +937,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  meter_id AS metric,\n  AVG(power_factor) AS value\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  meter_id AS metric,\n  AVG(power_factor) AS value\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
           "refId": "A"
         }
       ],
@@ -1011,7 +1011,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(frequency_hz) AS \"Frequency (Hz)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
+          "rawSql": "SELECT\n  time_bucket((CASE WHEN '$interval' LIKE '%auto%' OR '$interval' = 'All' THEN '1m' ELSE '$interval' END)::interval, time) AS \"time\",\n  AVG(frequency_hz) AS \"Frequency (Hz)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
           "refId": "A"
         }
       ],
