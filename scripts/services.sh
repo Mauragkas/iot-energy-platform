@@ -8,22 +8,22 @@ PIDS_FILE="$ROOT_DIR/target/services.pids"
 mkdir -p "$LOGS_DIR"
 
 start() {
-    echo "Starting compiled microservices in background..."
+    echo "Starting compiled microservices with setsid (detached session)..."
 
     # Ingestor Bridge
-    METRICS_PORT=8085 nohup "$ROOT_DIR/target/release/ingestor-rs" > "$LOGS_DIR/ingestor.log" 2>&1 &
+    METRICS_PORT=8085 setsid "$ROOT_DIR/target/release/ingestor-rs" > "$LOGS_DIR/ingestor.log" 2>&1 &
     INGESTOR_PID=$!
 
     # Persister
-    METRICS_PORT=8082 nohup "$ROOT_DIR/target/release/persister-rs" > "$LOGS_DIR/persister.log" 2>&1 &
+    METRICS_PORT=8082 setsid "$ROOT_DIR/target/release/persister-rs" > "$LOGS_DIR/persister.log" 2>&1 &
     PERSISTER_PID=$!
 
     # Anomaly Worker
-    METRICS_PORT=8083 PYTHONPATH="$ROOT_DIR/services/anomaly-worker-py" nohup "$ROOT_DIR/.venv/bin/python" "$ROOT_DIR/services/anomaly-worker-py/main.py" > "$LOGS_DIR/anomaly.log" 2>&1 &
+    METRICS_PORT=8083 PYTHONPATH="$ROOT_DIR/services/anomaly-worker-py" setsid "$ROOT_DIR/.venv/bin/python" "$ROOT_DIR/services/anomaly-worker-py/main.py" > "$LOGS_DIR/anomaly.log" 2>&1 &
     ANOMALY_PID=$!
 
     # REST API
-    PORT=8088 MONGO_URI="mongodb://mongo_admin:mongo_password@localhost:27018/iot_twins?authSource=admin" nohup "$ROOT_DIR/target/release/api-rs" > "$LOGS_DIR/api.log" 2>&1 &
+    PORT=8088 MONGO_URI="mongodb://mongo_admin:mongo_password@localhost:27018/iot_twins?authSource=admin" setsid "$ROOT_DIR/target/release/api-rs" > "$LOGS_DIR/api.log" 2>&1 &
     API_PID=$!
 
     echo "$INGESTOR_PID" > "$PIDS_FILE"
@@ -41,7 +41,7 @@ stop() {
     echo "Stopping background microservices..."
     if [ -f "$PIDS_FILE" ]; then
         while IFS= read -r pid; do
-            if kill -0 "$pid" 2>/dev/null; then
+            if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
                 kill "$pid" 2>/dev/null || true
             fi
         done < "$PIDS_FILE"
@@ -56,10 +56,10 @@ stop() {
 
 status() {
     echo "Checking microservices health:"
-    curl -s -w "  ✔ Ingestor (port 8085): HTTP %{http_code}\n" -o /dev/null http://localhost:8085/healthz || echo "  ✖ Ingestor: not responding"
-    curl -s -w "  ✔ Persister (port 8082): HTTP %{http_code}\n" -o /dev/null http://localhost:8082/healthz || echo "  ✖ Persister: not responding"
-    curl -s -w "  ✔ REST API (port 8088): HTTP %{http_code}\n" -o /dev/null http://localhost:8088/healthz || echo "  ✖ REST API: not responding"
-    curl -s -w "  ✔ REST API Readyz: HTTP %{http_code}\n" -o /dev/null http://localhost:8088/readyz || echo "  ✖ REST API Readyz: not responding"
+    curl -s -w "  Ingestor (port 8085): HTTP %{http_code}\n" -o /dev/null http://localhost:8085/healthz || echo "  ✖ Ingestor: not responding"
+    curl -s -w "  Persister (port 8082): HTTP %{http_code}\n" -o /dev/null http://localhost:8082/healthz || echo "  ✖ Persister: not responding"
+    curl -s -w "  REST API (port 8088): HTTP %{http_code}\n" -o /dev/null http://localhost:8088/healthz || echo "  ✖ REST API: not responding"
+    curl -s -w "  REST API Readyz: HTTP %{http_code}\n" -o /dev/null http://localhost:8088/readyz || echo "  ✖ REST API Readyz: not responding"
 }
 
 case "$1" in
