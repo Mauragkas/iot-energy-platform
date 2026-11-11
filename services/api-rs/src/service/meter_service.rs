@@ -1,11 +1,11 @@
-use std::sync::Arc;
 use chrono::{DateTime, Utc};
+use std::sync::Arc;
 
+use super::error::ServiceError;
 use crate::domain::{
     ConsumptionResponse, DeviceTwin, MeterId, RollupBucket, TimeRange, TimeseriesPoint,
 };
 use crate::repository::{TimeseriesRepository, TwinRepository};
-use super::error::ServiceError;
 
 pub const MAX_PAGINATION_LIMIT: usize = 2000;
 pub const DEFAULT_PAGINATION_LIMIT: usize = 100;

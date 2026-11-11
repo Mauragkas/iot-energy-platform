@@ -32,7 +32,9 @@ class FaultType(str, Enum):
     FREQUENCY_EXCURSION = "frequency_excursion"
 
 
-def inject_voltage_sag(reading: dict[str, Any], voltage_v: float = 195.0) -> dict[str, Any]:
+def inject_voltage_sag(
+    reading: dict[str, Any], voltage_v: float = 195.0
+) -> dict[str, Any]:
     """Inject a voltage sag below EN 50160 lower limit (V < 207V)."""
     reading = dict(reading)
     # Target under 207V (nominal 230V - 10%)
@@ -47,11 +49,15 @@ def inject_voltage_sag(reading: dict[str, Any], voltage_v: float = 195.0) -> dic
     i_l1 = reading["current_l1"]
     i_l2 = reading.get("current_l2", i_l1)
     i_l3 = reading.get("current_l3", i_l1)
-    reading["active_power_kw"] = round(((v_l1 * i_l1) + (v_l2 * i_l2) + (v_l3 * i_l3)) * pf / 1000.0, 3)
+    reading["active_power_kw"] = round(
+        ((v_l1 * i_l1) + (v_l2 * i_l2) + (v_l3 * i_l3)) * pf / 1000.0, 3
+    )
     return reading
 
 
-def inject_voltage_swell(reading: dict[str, Any], voltage_v: float = 265.0) -> dict[str, Any]:
+def inject_voltage_swell(
+    reading: dict[str, Any], voltage_v: float = 265.0
+) -> dict[str, Any]:
     """Inject a voltage swell above EN 50160 upper limit (V > 253V)."""
     reading = dict(reading)
     # Target above 253V (nominal 230V + 10%)
@@ -65,11 +71,15 @@ def inject_voltage_swell(reading: dict[str, Any], voltage_v: float = 265.0) -> d
     i_l1 = reading["current_l1"]
     i_l2 = reading.get("current_l2", i_l1)
     i_l3 = reading.get("current_l3", i_l1)
-    reading["active_power_kw"] = round(((v_l1 * i_l1) + (v_l2 * i_l2) + (v_l3 * i_l3)) * pf / 1000.0, 3)
+    reading["active_power_kw"] = round(
+        ((v_l1 * i_l1) + (v_l2 * i_l2) + (v_l3 * i_l3)) * pf / 1000.0, 3
+    )
     return reading
 
 
-def inject_demand_spike(reading: dict[str, Any], spike_kw: float = 35.0) -> dict[str, Any]:
+def inject_demand_spike(
+    reading: dict[str, Any], spike_kw: float = 35.0
+) -> dict[str, Any]:
     """Inject a demand spike exceeding normal 3-sigma thresholds (e.g. 35kW)."""
     reading = dict(reading)
     target_kw = float(spike_kw) if spike_kw > 25.0 else 35.0
@@ -77,7 +87,9 @@ def inject_demand_spike(reading: dict[str, Any], spike_kw: float = 35.0) -> dict
     reading["status"] = "WARNING"
 
     # Scale phase currents to match demand spike physically
-    v_avg = (reading["voltage_l1"] + reading["voltage_l2"] + reading["voltage_l3"]) / 3.0
+    v_avg = (
+        reading["voltage_l1"] + reading["voltage_l2"] + reading["voltage_l3"]
+    ) / 3.0
     pf = max(0.1, reading["power_factor"])
     i_phase = (target_kw * 1000.0) / (3.0 * v_avg * pf)
     reading["current_l1"] = round(i_phase * random.uniform(0.98, 1.02), 2)
@@ -106,9 +118,11 @@ def inject_phase_imbalance(
 
     pf = reading["power_factor"]
     reading["active_power_kw"] = round(
-        ((reading["voltage_l1"] * reading["current_l1"])
-         + (reading["voltage_l2"] * reading["current_l2"])
-         + (reading["voltage_l3"] * reading["current_l3"]))
+        (
+            (reading["voltage_l1"] * reading["current_l1"])
+            + (reading["voltage_l2"] * reading["current_l2"])
+            + (reading["voltage_l3"] * reading["current_l3"])
+        )
         * pf
         / 1000.0,
         3,
@@ -117,7 +131,9 @@ def inject_phase_imbalance(
     return reading
 
 
-def inject_low_power_factor(reading: dict[str, Any], pf: float = 0.65) -> dict[str, Any]:
+def inject_low_power_factor(
+    reading: dict[str, Any], pf: float = 0.65
+) -> dict[str, Any]:
     """Inject poor power factor (PF < 0.8) representing inductive motor load."""
     reading = dict(reading)
     target_pf = float(pf) if pf < 0.8 else 0.65
@@ -128,8 +144,12 @@ def inject_low_power_factor(reading: dict[str, Any], pf: float = 0.65) -> dict[s
     # P = V * I * PF / 1000 => I increases when PF drops
     scale = 0.95 / max(0.2, target_pf)
     reading["current_l1"] = round(reading["current_l1"] * scale, 2)
-    reading["current_l2"] = round(reading.get("current_l2", reading["current_l1"]) * scale, 2)
-    reading["current_l3"] = round(reading.get("current_l3", reading["current_l1"]) * scale, 2)
+    reading["current_l2"] = round(
+        reading.get("current_l2", reading["current_l1"]) * scale, 2
+    )
+    reading["current_l3"] = round(
+        reading.get("current_l3", reading["current_l1"]) * scale, 2
+    )
     return reading
 
 
@@ -178,7 +198,9 @@ class FaultInjector:
         self.fault_probability = max(0.0, min(1.0, fault_probability))
         self.available_faults = list(FaultType)
 
-    def maybe_inject(self, reading: dict[str, Any]) -> tuple[dict[str, Any], FaultType | None]:
+    def maybe_inject(
+        self, reading: dict[str, Any]
+    ) -> tuple[dict[str, Any], FaultType | None]:
         """Inject an anomaly if stochastic threshold is met."""
         if random.random() < self.fault_probability:
             fault = random.choice(self.available_faults)

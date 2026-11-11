@@ -1,14 +1,14 @@
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, RwLock};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, RwLock};
 
-use crate::domain::{AlertRecord, ConsumptionResponse, DeviceTwin, TimeseriesPoint};
 use super::alert::AlertRepository;
 use super::error::RepositoryError;
 use super::health::HealthRepository;
 use super::timeseries::TimeseriesRepository;
 use super::twin::TwinRepository;
+use crate::domain::{AlertRecord, ConsumptionResponse, DeviceTwin, TimeseriesPoint};
 
 /// Mock implementation of TimeseriesRepository for testing.
 #[derive(Clone, Default)]
@@ -112,10 +112,7 @@ impl TwinRepository for MockTwinRepository {
         Ok(filtered)
     }
 
-    async fn get_twin(
-        &self,
-        meter_id: &str,
-    ) -> Result<Option<DeviceTwin>, RepositoryError> {
+    async fn get_twin(&self, meter_id: &str) -> Result<Option<DeviceTwin>, RepositoryError> {
         let lock = self.twins.read().unwrap();
         let found = lock.iter().find(|t| t.meter_id == meter_id).cloned();
         Ok(found)
@@ -205,7 +202,9 @@ impl HealthRepository for MockHealthRepository {
         if self.timescale_healthy.load(Ordering::SeqCst) {
             Ok(())
         } else {
-            Err(RepositoryError::Connection("TimescaleDB connection failed".to_string()))
+            Err(RepositoryError::Connection(
+                "TimescaleDB connection failed".to_string(),
+            ))
         }
     }
 
@@ -213,7 +212,9 @@ impl HealthRepository for MockHealthRepository {
         if self.mongo_healthy.load(Ordering::SeqCst) {
             Ok(())
         } else {
-            Err(RepositoryError::Connection("MongoDB ping failed".to_string()))
+            Err(RepositoryError::Connection(
+                "MongoDB ping failed".to_string(),
+            ))
         }
     }
 }

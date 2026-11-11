@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 
-use crate::domain::{ConsumptionResponse, TimeseriesPoint};
 use super::error::RepositoryError;
+use crate::domain::{ConsumptionResponse, TimeseriesPoint};
 
 #[async_trait]
 pub trait TimeseriesRepository: Send + Sync {

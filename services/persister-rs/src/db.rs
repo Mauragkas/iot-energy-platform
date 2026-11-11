@@ -1,6 +1,6 @@
+use deadpool_postgres::{Manager, Pool, Runtime};
 use std::fmt::Write;
 use std::str::FromStr;
-use deadpool_postgres::{Manager, Pool, Runtime};
 use tokio_postgres::types::ToSql;
 use tokio_postgres::NoTls;
 use tracing::{debug, info};
@@ -123,7 +123,11 @@ pub async fn batch_insert(
 
     let client = pool.get().await?;
     let rows_affected = client.execute(&sql, &params[..]).await?;
-    debug!(rows_affected, count = readings.len(), "Batch insert executed");
+    debug!(
+        rows_affected,
+        count = readings.len(),
+        "Batch insert executed"
+    );
 
     Ok(rows_affected)
 }

@@ -77,7 +77,10 @@ fn test_alert_severity_parsing() {
         "WARNING".parse::<AlertSeverity>().unwrap(),
         AlertSeverity::Warning
     );
-    assert_eq!("info".parse::<AlertSeverity>().unwrap(), AlertSeverity::Info);
+    assert_eq!(
+        "info".parse::<AlertSeverity>().unwrap(),
+        AlertSeverity::Info
+    );
     assert!("UNKNOWN".parse::<AlertSeverity>().is_err());
 }
 

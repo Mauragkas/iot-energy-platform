@@ -31,7 +31,12 @@ from simulator.meter import (
 )
 
 # Locate JSON schema
-SCHEMA_PATH = Path(__file__).resolve().parent.parent.parent / "docs" / "schemas" / "telemetry.json"
+SCHEMA_PATH = (
+    Path(__file__).resolve().parent.parent.parent
+    / "docs"
+    / "schemas"
+    / "telemetry.json"
+)
 
 
 @pytest.fixture(scope="session")
@@ -133,9 +138,15 @@ def test_create_fleet() -> None:
         (FaultType.VOLTAGE_SAG, lambda r: r["voltage_l1"] < 207.0),
         (FaultType.VOLTAGE_SWELL, lambda r: r["voltage_l1"] > 253.0),
         (FaultType.DEMAND_SPIKE, lambda r: r["active_power_kw"] >= 30.0),
-        (FaultType.PHASE_IMBALANCE, lambda r: abs(r["voltage_l1"] - r["voltage_l2"]) > 15.0),
+        (
+            FaultType.PHASE_IMBALANCE,
+            lambda r: abs(r["voltage_l1"] - r["voltage_l2"]) > 15.0,
+        ),
         (FaultType.LOW_POWER_FACTOR, lambda r: r["power_factor"] < 0.8),
-        (FaultType.FREQUENCY_EXCURSION, lambda r: r["frequency_hz"] < 49.5 or r["frequency_hz"] > 50.5),
+        (
+            FaultType.FREQUENCY_EXCURSION,
+            lambda r: r["frequency_hz"] < 49.5 or r["frequency_hz"] > 50.5,
+        ),
     ],
 )
 def test_fault_injection_ranges_and_schema(
@@ -252,7 +263,9 @@ def test_replay_buffer_offline_burst_and_duplicates(telemetry_schema: dict) -> N
         else:
             seen.add(pair)
 
-    assert duplicates_found == expected_duplicates, f"Expected {expected_duplicates} duplicates, got {duplicates_found}"
+    assert duplicates_found == expected_duplicates, (
+        f"Expected {expected_duplicates} duplicates, got {duplicates_found}"
+    )
 
     # Verify that burst is not in strict monotonic chronological order (shuffled)
     timestamps = [p["timestamp"] for p in burst]
@@ -279,14 +292,20 @@ def test_cli_parser_custom_args() -> None:
     """Test CLI argument parser with customized parameters."""
     parser = build_parser()
     cmd = [
-        "--host", "broker.internal",
-        "--port", "8883",
-        "--meters", "2000",
-        "--rate", "50",
-        "--mode", "load",
+        "--host",
+        "broker.internal",
+        "--port",
+        "8883",
+        "--meters",
+        "2000",
+        "--rate",
+        "50",
+        "--mode",
+        "load",
         "--inject-anomalies",
         "--replay-offline",
-        "--duration", "15.5",
+        "--duration",
+        "15.5",
     ]
     args = parser.parse_args(cmd)
 
@@ -303,12 +322,17 @@ def test_cli_parser_custom_args() -> None:
 def test_simulator_runner_execution_mocked() -> None:
     """Test SimulatorRunner lifecycle with mocked MQTT client."""
     parser = build_parser()
-    args = parser.parse_args([
-        "--meters", "10",
-        "--rate", "2.0",
-        "--inject-anomalies",
-        "--duration", "0.2",
-    ])
+    args = parser.parse_args(
+        [
+            "--meters",
+            "10",
+            "--rate",
+            "2.0",
+            "--inject-anomalies",
+            "--duration",
+            "0.2",
+        ]
+    )
 
     runner = SimulatorRunner(args)
 

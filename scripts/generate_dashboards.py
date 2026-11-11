@@ -16,6 +16,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 PG_DATASOURCE = {"type": "postgres", "uid": "timescaledb"}
 PROM_DATASOURCE = {"type": "prometheus", "uid": "prometheus"}
 
+
 # ==============================================================================
 # Dashboard 1: Grid Telemetry (grid_telemetry.json)
 # ==============================================================================
@@ -29,7 +30,7 @@ def make_grid_telemetry_dashboard():
                     "enable": True,
                     "hide": True,
                     "name": "Annotations & Alerts",
-                    "type": "dashboard"
+                    "type": "dashboard",
                 }
             ]
         },
@@ -61,13 +62,17 @@ def make_grid_telemetry_dashboard():
                     "regex": "",
                     "skipUrlSync": False,
                     "sort": 1,
-                    "type": "query"
+                    "type": "query",
                 },
                 {
                     "auto": True,
                     "auto_count": 30,
                     "auto_min": "1s",
-                    "current": {"selected": True, "text": "auto", "value": "$__auto_interval"},
+                    "current": {
+                        "selected": True,
+                        "text": "auto",
+                        "value": "$__auto_interval",
+                    },
                     "hide": 0,
                     "label": "Interval",
                     "name": "interval",
@@ -80,18 +85,16 @@ def make_grid_telemetry_dashboard():
                         {"selected": False, "text": "1m", "value": "1m"},
                         {"selected": False, "text": "5m", "value": "5m"},
                         {"selected": False, "text": "15m", "value": "15m"},
-                        {"selected": False, "text": "1h", "value": "1h"}
+                        {"selected": False, "text": "1h", "value": "1h"},
                     ],
                     "query": "1s,5s,10s,30s,1m,5m,15m,1h",
                     "refresh": 2,
-                    "type": "interval"
-                }
+                    "type": "interval",
+                },
             ]
         },
         "time": {"from": "now-15m", "to": "now"},
-        "timepicker": {
-            "refresh_intervals": ["1s", "5s", "10s", "30s", "1m", "5m"]
-        },
+        "timepicker": {"refresh_intervals": ["1s", "5s", "10s", "30s", "1m", "5m"]},
         "timezone": "browser",
         "title": "Grid Telemetry & Power Quality",
         "uid": "grid-telemetry",
@@ -111,8 +114,8 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": True,
-                        "rawSql": "SELECT NOW() AS \"time\", COUNT(DISTINCT meter_id) AS \"Active Meters\"\nFROM meter_readings\nWHERE time >= NOW() - INTERVAL '5 minutes';",
-                        "refId": "A"
+                        "rawSql": 'SELECT NOW() AS "time", COUNT(DISTINCT meter_id) AS "Active Meters"\nFROM meter_readings\nWHERE time >= NOW() - INTERVAL \'5 minutes\';',
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -124,21 +127,25 @@ def make_grid_telemetry_dashboard():
                             "steps": [
                                 {"color": "red", "value": None},
                                 {"color": "yellow", "value": 1},
-                                {"color": "green", "value": 10}
-                            ]
+                                {"color": "green", "value": 10},
+                            ],
                         },
-                        "unit": "none"
+                        "unit": "none",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "none",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
@@ -152,8 +159,8 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": True,
-                        "rawSql": "SELECT NOW() AS \"time\", COALESCE(SUM(active_power_kw), 0) AS \"Total Load\"\nFROM (\n  SELECT DISTINCT ON (meter_id) active_power_kw\n  FROM meter_readings\n  WHERE time >= NOW() - INTERVAL '5 minutes'\n  ORDER BY meter_id, time DESC\n) latest;",
-                        "refId": "A"
+                        "rawSql": 'SELECT NOW() AS "time", COALESCE(SUM(active_power_kw), 0) AS "Total Load"\nFROM (\n  SELECT DISTINCT ON (meter_id) active_power_kw\n  FROM meter_readings\n  WHERE time >= NOW() - INTERVAL \'5 minutes\'\n  ORDER BY meter_id, time DESC\n) latest;',
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -162,22 +169,24 @@ def make_grid_telemetry_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [
-                                {"color": "blue", "value": None}
-                            ]
+                            "steps": [{"color": "blue", "value": None}],
                         },
-                        "unit": "kw"
+                        "unit": "kw",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
@@ -191,8 +200,8 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": True,
-                        "rawSql": "SELECT NOW() AS \"time\", ROUND(AVG(frequency_hz)::numeric, 2) AS \"Mean Frequency\"\nFROM meter_readings\nWHERE time >= NOW() - INTERVAL '5 minutes';",
-                        "refId": "A"
+                        "rawSql": 'SELECT NOW() AS "time", ROUND(AVG(frequency_hz)::numeric, 2) AS "Mean Frequency"\nFROM meter_readings\nWHERE time >= NOW() - INTERVAL \'5 minutes\';',
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -206,21 +215,25 @@ def make_grid_telemetry_dashboard():
                                 {"color": "yellow", "value": 49.5},
                                 {"color": "green", "value": 49.8},
                                 {"color": "yellow", "value": 50.2},
-                                {"color": "red", "value": 50.5}
-                            ]
+                                {"color": "red", "value": 50.5},
+                            ],
                         },
-                        "unit": "hertz"
+                        "unit": "hertz",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "none",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
@@ -234,8 +247,8 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": True,
-                        "rawSql": "SELECT NOW() AS \"time\", ROUND(AVG(power_factor)::numeric, 3) AS \"Mean Power Factor\"\nFROM meter_readings\nWHERE time >= NOW() - INTERVAL '5 minutes';",
-                        "refId": "A"
+                        "rawSql": 'SELECT NOW() AS "time", ROUND(AVG(power_factor)::numeric, 3) AS "Mean Power Factor"\nFROM meter_readings\nWHERE time >= NOW() - INTERVAL \'5 minutes\';',
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -250,30 +263,33 @@ def make_grid_telemetry_dashboard():
                             "steps": [
                                 {"color": "red", "value": None},
                                 {"color": "yellow", "value": 0.85},
-                                {"color": "green", "value": 0.95}
-                            ]
+                                {"color": "green", "value": 0.95},
+                            ],
                         },
-                        "unit": "none"
+                        "unit": "none",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "none",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
-
             # Row 1: Active Power Load Curves
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4},
                 "id": 100,
                 "title": "3-Phase Active Power (kW) Load Curves",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 16, "x": 0, "y": 5},
@@ -289,7 +305,7 @@ def make_grid_telemetry_dashboard():
                         "format": "time_series",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  meter_id AS metric,\n  AVG(active_power_kw) AS \"Active Power (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -306,7 +322,7 @@ def make_grid_telemetry_dashboard():
                             "lineWidth": 2,
                             "pointSize": 5,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
                         "thresholds": {
@@ -314,17 +330,22 @@ def make_grid_telemetry_dashboard():
                             "steps": [
                                 {"color": "green", "value": None},
                                 {"color": "yellow", "value": 5},
-                                {"color": "red", "value": 15}
-                            ]
+                                {"color": "red", "value": 15},
+                            ],
                         },
-                        "unit": "kw"
+                        "unit": "kw",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 8, "x": 16, "y": 5},
@@ -339,8 +360,8 @@ def make_grid_telemetry_dashboard():
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": True,
-                        "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  SUM(active_power_kw) AS \"Total Fleet Load (kW)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\nGROUP BY 1\nORDER BY 1;",
-                        "refId": "A"
+                        "rawSql": 'SELECT\n  time_bucket(\'$interval\', time) AS "time",\n  SUM(active_power_kw) AS "Total Fleet Load (kW)"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\nGROUP BY 1\nORDER BY 1;',
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -357,26 +378,30 @@ def make_grid_telemetry_dashboard():
                             "lineInterpolation": "smooth",
                             "lineWidth": 2,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
-                        "unit": "kw"
+                        "unit": "kw",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "single", "sort": "none"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "single", "sort": "none"},
+                },
             },
-
             # Row 2: Voltage Stability Monitoring
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13},
                 "id": 101,
                 "title": "Voltage Stability Monitoring (EN 50160: 207V - 253V)",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 16, "x": 0, "y": 14},
@@ -392,7 +417,7 @@ def make_grid_telemetry_dashboard():
                         "format": "time_series",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(voltage_l1) AS \"V_L1 (Phase 1)\",\n  AVG(voltage_l2) AS \"V_L2 (Phase 2)\",\n  AVG(voltage_l3) AS \"V_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -409,7 +434,7 @@ def make_grid_telemetry_dashboard():
                             "lineWidth": 2,
                             "showPoints": "never",
                             "spanNulls": False,
-                            "thresholdsStyle": {"mode": "line"}
+                            "thresholdsStyle": {"mode": "line"},
                         },
                         "mappings": [],
                         "max": 280,
@@ -421,30 +446,50 @@ def make_grid_telemetry_dashboard():
                                 {"color": "yellow", "value": 207},
                                 {"color": "green", "value": 215},
                                 {"color": "yellow", "value": 245},
-                                {"color": "red", "value": 253}
-                            ]
+                                {"color": "red", "value": 253},
+                            ],
                         },
-                        "unit": "volt"
+                        "unit": "volt",
                     },
                     "overrides": [
                         {
                             "matcher": {"id": "byName", "options": "V_L1 (Phase 1)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#73BF69", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#73BF69", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "V_L2 (Phase 2)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#FADE2A", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#FADE2A", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "V_L3 (Phase 3)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}}]
-                        }
-                    ]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#5794F2", "mode": "fixed"},
+                                }
+                            ],
+                        },
+                    ],
                 },
                 "options": {
-                    "legend": {"calcs": ["min", "mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "none"}
-                }
+                    "legend": {
+                        "calcs": ["min", "mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "none"},
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 8, "x": 16, "y": 14},
@@ -460,7 +505,7 @@ def make_grid_telemetry_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  ROUND(AVG(voltage_l1)::numeric, 1) AS \"V_L1\",\n  ROUND(AVG(voltage_l2)::numeric, 1) AS \"V_L2\",\n  ROUND(AVG(voltage_l3)::numeric, 1) AS \"V_L3\"\nFROM meter_readings\nWHERE\n  time >= NOW() - INTERVAL '2 minutes'\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id');",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -476,28 +521,31 @@ def make_grid_telemetry_dashboard():
                                 {"color": "yellow", "value": 207},
                                 {"color": "green", "value": 215},
                                 {"color": "yellow", "value": 245},
-                                {"color": "red", "value": 253}
-                            ]
+                                {"color": "red", "value": 253},
+                            ],
                         },
-                        "unit": "volt"
+                        "unit": "volt",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
                     "showThresholdLabels": True,
-                    "showThresholdMarkers": True
-                }
+                    "showThresholdMarkers": True,
+                },
             },
-
             # Row 3: Current per Phase
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 22},
                 "id": 102,
                 "title": "Current per Phase (I_L1, I_L2, I_L3)",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 24, "x": 0, "y": 23},
@@ -513,7 +561,7 @@ def make_grid_telemetry_dashboard():
                         "format": "time_series",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(current_l1) AS \"I_L1 (Phase 1)\",\n  AVG(current_l2) AS \"I_L2 (Phase 2)\",\n  AVG(current_l3) AS \"I_L3 (Phase 3)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -529,26 +577,30 @@ def make_grid_telemetry_dashboard():
                             "lineInterpolation": "smooth",
                             "lineWidth": 2,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
-                        "unit": "amp"
+                        "unit": "amp",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["min", "mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["min", "mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
-
             # Row 4: Power Factor Heatmap & Quality
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31},
                 "id": 103,
                 "title": "Power Factor Heatmap & Frequency Quality",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 9, "w": 16, "x": 0, "y": 32},
@@ -564,16 +616,20 @@ def make_grid_telemetry_dashboard():
                         "format": "time_series",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  meter_id AS metric,\n  AVG(power_factor) AS value\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
                     "defaults": {
                         "custom": {
-                            "hideFrom": {"legend": False, "tooltip": False, "viz": False}
+                            "hideFrom": {
+                                "legend": False,
+                                "tooltip": False,
+                                "viz": False,
+                            }
                         }
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "calculate": False,
@@ -583,15 +639,20 @@ def make_grid_telemetry_dashboard():
                         "mode": "scheme",
                         "reverse": False,
                         "scale": "exponential",
-                        "scheme": "Spectral"
+                        "scheme": "Spectral",
                     },
                     "exemplars": {"color": "rgba(255,0,255,0.7)"},
                     "filterValues": {"le": 1e-09},
                     "legend": {"show": True},
                     "rowsFrame": {"layout": "auto"},
                     "tooltip": {"show": True, "yHistogram": False},
-                    "yAxis": {"axisPlacement": "left", "max": 1, "min": 0.7, "unit": "none"}
-                }
+                    "yAxis": {
+                        "axisPlacement": "left",
+                        "max": 1,
+                        "min": 0.7,
+                        "unit": "none",
+                    },
+                },
             },
             {
                 "gridPos": {"h": 9, "w": 8, "x": 16, "y": 32},
@@ -607,7 +668,7 @@ def make_grid_telemetry_dashboard():
                         "format": "time_series",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  AVG(frequency_hz) AS \"Frequency (Hz)\"\nFROM meter_readings\nWHERE\n  $__timeFilter(time)\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 1;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -624,7 +685,7 @@ def make_grid_telemetry_dashboard():
                             "lineWidth": 2,
                             "showPoints": "never",
                             "spanNulls": False,
-                            "thresholdsStyle": {"mode": "line"}
+                            "thresholdsStyle": {"mode": "line"},
                         },
                         "mappings": [],
                         "max": 51,
@@ -636,19 +697,24 @@ def make_grid_telemetry_dashboard():
                                 {"color": "yellow", "value": 49.5},
                                 {"color": "green", "value": 49.8},
                                 {"color": "yellow", "value": 50.2},
-                                {"color": "red", "value": 50.5}
-                            ]
+                                {"color": "red", "value": 50.5},
+                            ],
                         },
-                        "unit": "hertz"
+                        "unit": "hertz",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["min", "mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "single", "sort": "none"}
-                }
-            }
-        ]
+                    "legend": {
+                        "calcs": ["min", "mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "single", "sort": "none"},
+                },
+            },
+        ],
     }
 
 
@@ -665,7 +731,7 @@ def make_pipeline_system_dashboard():
                     "enable": True,
                     "hide": True,
                     "name": "Annotations & Alerts",
-                    "type": "dashboard"
+                    "type": "dashboard",
                 }
             ]
         },
@@ -685,7 +751,11 @@ def make_pipeline_system_dashboard():
                     "auto": True,
                     "auto_count": 30,
                     "auto_min": "1s",
-                    "current": {"selected": True, "text": "auto", "value": "$__auto_interval"},
+                    "current": {
+                        "selected": True,
+                        "text": "auto",
+                        "value": "$__auto_interval",
+                    },
                     "hide": 0,
                     "label": "Interval",
                     "name": "interval",
@@ -696,18 +766,16 @@ def make_pipeline_system_dashboard():
                         {"selected": False, "text": "10s", "value": "10s"},
                         {"selected": False, "text": "30s", "value": "30s"},
                         {"selected": False, "text": "1m", "value": "1m"},
-                        {"selected": False, "text": "5m", "value": "5m"}
+                        {"selected": False, "text": "5m", "value": "5m"},
                     ],
                     "query": "1s,5s,10s,30s,1m,5m",
                     "refresh": 2,
-                    "type": "interval"
+                    "type": "interval",
                 }
             ]
         },
         "time": {"from": "now-15m", "to": "now"},
-        "timepicker": {
-            "refresh_intervals": ["1s", "5s", "10s", "30s", "1m", "5m"]
-        },
+        "timepicker": {"refresh_intervals": ["1s", "5s", "10s", "30s", "1m", "5m"]},
         "timezone": "browser",
         "title": "Pipeline & System Performance",
         "uid": "pipeline-system",
@@ -728,7 +796,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_messages_received_total[1m])) or vector(0)",
                         "legendFormat": "Messages/sec",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -737,20 +805,24 @@ def make_pipeline_system_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [{"color": "blue", "value": None}]
+                            "steps": [{"color": "blue", "value": None}],
                         },
-                        "unit": "reqps"
+                        "unit": "reqps",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 5, "x": 5, "y": 0},
@@ -765,7 +837,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_messages_published_total[1m])) or vector(0)",
                         "legendFormat": "Published/sec",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -774,20 +846,24 @@ def make_pipeline_system_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [{"color": "green", "value": None}]
+                            "steps": [{"color": "green", "value": None}],
                         },
-                        "unit": "reqps"
+                        "unit": "reqps",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 5, "x": 10, "y": 0},
@@ -802,7 +878,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_persisted_records_total[1m])) or vector(0)",
                         "legendFormat": "Records/sec",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -811,20 +887,24 @@ def make_pipeline_system_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [{"color": "purple", "value": None}]
+                            "steps": [{"color": "purple", "value": None}],
                         },
-                        "unit": "ops"
+                        "unit": "ops",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 4, "x": 15, "y": 0},
@@ -839,7 +919,7 @@ def make_pipeline_system_dashboard():
                         "expr": "clamp_max((sum(rate(telemetry_messages_deduplicated_total[5m])) / clamp_min(sum(rate(telemetry_messages_received_total[5m])), 0.0001)) * 100, 100) or vector(0)",
                         "legendFormat": "Dedup %",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -852,21 +932,25 @@ def make_pipeline_system_dashboard():
                             "steps": [
                                 {"color": "green", "value": None},
                                 {"color": "yellow", "value": 15},
-                                {"color": "red", "value": 40}
-                            ]
+                                {"color": "red", "value": 40},
+                            ],
                         },
-                        "unit": "percent"
+                        "unit": "percent",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "none",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 5, "x": 19, "y": 0},
@@ -878,10 +962,10 @@ def make_pipeline_system_dashboard():
                     {
                         "datasource": PROM_DATASOURCE,
                         "editorMode": "code",
-                        "expr": "sum(up{job=~\"ingestor-rs|persister-rs|anomaly-worker-py|api-rs\"}) or vector(0)",
+                        "expr": 'sum(up{job=~"ingestor-rs|persister-rs|anomaly-worker-py|api-rs"}) or vector(0)',
                         "legendFormat": "Healthy Services",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -895,30 +979,33 @@ def make_pipeline_system_dashboard():
                             "steps": [
                                 {"color": "red", "value": None},
                                 {"color": "yellow", "value": 2},
-                                {"color": "green", "value": 4}
-                            ]
+                                {"color": "green", "value": 4},
+                            ],
                         },
-                        "unit": "none"
+                        "unit": "none",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "none",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
-
             # Row 1: Ingestion & Deduplication
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4},
                 "id": 100,
                 "title": "Ingestion Throughput & Deduplication Metrics",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
@@ -934,7 +1021,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_messages_received_total[1m]))",
                         "legendFormat": "MQTT Received (msg/s)",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -951,17 +1038,22 @@ def make_pipeline_system_dashboard():
                             "lineInterpolation": "smooth",
                             "lineWidth": 2,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
-                        "unit": "reqps"
+                        "unit": "reqps",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "single", "sort": "none"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "single", "sort": "none"},
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
@@ -977,7 +1069,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_messages_published_total[1m]))",
                         "legendFormat": "Published to Kafka (msg/s)",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -985,7 +1077,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_messages_deduplicated_total[1m]))",
                         "legendFormat": "Deduplication Hits / Drops (msg/s)",
                         "range": True,
-                        "refId": "B"
+                        "refId": "B",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -993,8 +1085,8 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_messages_rejected_total[1m]))",
                         "legendFormat": "Rejected Invalid Payloads (msg/s)",
                         "range": True,
-                        "refId": "C"
-                    }
+                        "refId": "C",
+                    },
                 ],
                 "fieldConfig": {
                     "defaults": {
@@ -1009,39 +1101,67 @@ def make_pipeline_system_dashboard():
                             "lineInterpolation": "smooth",
                             "lineWidth": 2,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
-                        "unit": "reqps"
+                        "unit": "reqps",
                     },
                     "overrides": [
                         {
-                            "matcher": {"id": "byName", "options": "Published to Kafka (msg/s)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#73BF69", "mode": "fixed"}}]
+                            "matcher": {
+                                "id": "byName",
+                                "options": "Published to Kafka (msg/s)",
+                            },
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#73BF69", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
-                            "matcher": {"id": "byName", "options": "Deduplication Hits / Drops (msg/s)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#FF9830", "mode": "fixed"}}]
+                            "matcher": {
+                                "id": "byName",
+                                "options": "Deduplication Hits / Drops (msg/s)",
+                            },
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#FF9830", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
-                            "matcher": {"id": "byName", "options": "Rejected Invalid Payloads (msg/s)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#F2495C", "mode": "fixed"}}]
-                        }
-                    ]
+                            "matcher": {
+                                "id": "byName",
+                                "options": "Rejected Invalid Payloads (msg/s)",
+                            },
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#F2495C", "mode": "fixed"},
+                                }
+                            ],
+                        },
+                    ],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
-
             # Row 2: Kafka Consumer Lag
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13},
                 "id": 101,
                 "title": "Kafka Consumer Lag & Pipeline Buffering",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 24, "x": 0, "y": 14},
@@ -1054,10 +1174,10 @@ def make_pipeline_system_dashboard():
                     {
                         "datasource": PROM_DATASOURCE,
                         "editorMode": "code",
-                        "expr": "sum by (consumergroup) (kafka_consumergroup_lag{consumergroup=~\"persister.*|anomaly.*\"}) or (clamp_min(sum(telemetry_messages_published_total) - sum(telemetry_persisted_records_total), 0))",
+                        "expr": 'sum by (consumergroup) (kafka_consumergroup_lag{consumergroup=~"persister.*|anomaly.*"}) or (clamp_min(sum(telemetry_messages_published_total) - sum(telemetry_persisted_records_total), 0))',
                         "legendFormat": "Consumer Lag: {{consumergroup}}",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -1065,8 +1185,8 @@ def make_pipeline_system_dashboard():
                         "expr": "clamp_min(sum(telemetry_messages_published_total) - sum(telemetry_persisted_records_total), 0)",
                         "legendFormat": "Pipeline Backpressure Lag (Published - Persisted)",
                         "range": True,
-                        "refId": "B"
-                    }
+                        "refId": "B",
+                    },
                 ],
                 "fieldConfig": {
                     "defaults": {
@@ -1082,7 +1202,7 @@ def make_pipeline_system_dashboard():
                             "lineWidth": 2,
                             "showPoints": "never",
                             "spanNulls": False,
-                            "thresholdsStyle": {"mode": "line"}
+                            "thresholdsStyle": {"mode": "line"},
                         },
                         "mappings": [],
                         "thresholds": {
@@ -1090,26 +1210,30 @@ def make_pipeline_system_dashboard():
                             "steps": [
                                 {"color": "green", "value": None},
                                 {"color": "yellow", "value": 500},
-                                {"color": "red", "value": 2000}
-                            ]
+                                {"color": "red", "value": 2000},
+                            ],
                         },
-                        "unit": "short"
+                        "unit": "short",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
-
             # Row 3: Persister Throughput & Batch Duration
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 22},
                 "id": 102,
                 "title": "TimescaleDB Persister Throughput & Batch Insertion Latency",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 12, "x": 0, "y": 23},
@@ -1125,7 +1249,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_persisted_records_total[1m]))",
                         "legendFormat": "Persisted Records/sec",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -1133,7 +1257,7 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_persist_batches_total[1m]))",
                         "legendFormat": "Batches Inserted/sec",
                         "range": True,
-                        "refId": "B"
+                        "refId": "B",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -1141,8 +1265,8 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_persist_errors_total[1m]))",
                         "legendFormat": "Persist Errors/sec",
                         "range": True,
-                        "refId": "C"
-                    }
+                        "refId": "C",
+                    },
                 ],
                 "fieldConfig": {
                     "defaults": {
@@ -1157,22 +1281,35 @@ def make_pipeline_system_dashboard():
                             "lineInterpolation": "smooth",
                             "lineWidth": 2,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
-                        "unit": "ops"
+                        "unit": "ops",
                     },
                     "overrides": [
                         {
-                            "matcher": {"id": "byName", "options": "Persist Errors/sec"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#F2495C", "mode": "fixed"}}]
+                            "matcher": {
+                                "id": "byName",
+                                "options": "Persist Errors/sec",
+                            },
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#F2495C", "mode": "fixed"},
+                                }
+                            ],
                         }
-                    ]
+                    ],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 23},
@@ -1188,7 +1325,7 @@ def make_pipeline_system_dashboard():
                         "expr": "histogram_quantile(0.99, sum(rate(telemetry_persist_batch_duration_seconds_bucket[1m])) by (le))",
                         "legendFormat": "p99 Batch Duration",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -1196,7 +1333,7 @@ def make_pipeline_system_dashboard():
                         "expr": "histogram_quantile(0.95, sum(rate(telemetry_persist_batch_duration_seconds_bucket[1m])) by (le))",
                         "legendFormat": "p95 Batch Duration",
                         "range": True,
-                        "refId": "B"
+                        "refId": "B",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
@@ -1204,8 +1341,8 @@ def make_pipeline_system_dashboard():
                         "expr": "sum(rate(telemetry_persist_batch_duration_seconds_sum[1m])) / sum(rate(telemetry_persist_batch_duration_seconds_count[1m]))",
                         "legendFormat": "Avg Batch Duration",
                         "range": True,
-                        "refId": "C"
-                    }
+                        "refId": "C",
+                    },
                 ],
                 "fieldConfig": {
                     "defaults": {
@@ -1221,7 +1358,7 @@ def make_pipeline_system_dashboard():
                             "lineWidth": 2,
                             "showPoints": "never",
                             "spanNulls": False,
-                            "thresholdsStyle": {"mode": "line"}
+                            "thresholdsStyle": {"mode": "line"},
                         },
                         "mappings": [],
                         "thresholds": {
@@ -1229,26 +1366,30 @@ def make_pipeline_system_dashboard():
                             "steps": [
                                 {"color": "green", "value": None},
                                 {"color": "yellow", "value": 0.25},
-                                {"color": "red", "value": 1.0}
-                            ]
+                                {"color": "red", "value": 1.0},
+                            ],
                         },
-                        "unit": "s"
+                        "unit": "s",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
-
             # Row 4: API Request Latency Histogram
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31},
                 "id": 103,
                 "title": "API Request Latency & Throughput",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 14, "x": 0, "y": 32},
@@ -1261,27 +1402,27 @@ def make_pipeline_system_dashboard():
                     {
                         "datasource": PROM_DATASOURCE,
                         "editorMode": "code",
-                        "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"api-rs\"}[1m])) by (le)) or histogram_quantile(0.99, sum(rate(actix_http_request_duration_seconds_bucket[1m])) by (le)) or histogram_quantile(0.99, sum(rate(api_request_duration_seconds_bucket[1m])) by (le))",
+                        "expr": 'histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="api-rs"}[1m])) by (le)) or histogram_quantile(0.99, sum(rate(actix_http_request_duration_seconds_bucket[1m])) by (le)) or histogram_quantile(0.99, sum(rate(api_request_duration_seconds_bucket[1m])) by (le))',
                         "legendFormat": "p99 Latency",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
                         "editorMode": "code",
-                        "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"api-rs\"}[1m])) by (le)) or histogram_quantile(0.95, sum(rate(actix_http_request_duration_seconds_bucket[1m])) by (le)) or histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[1m])) by (le))",
+                        "expr": 'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="api-rs"}[1m])) by (le)) or histogram_quantile(0.95, sum(rate(actix_http_request_duration_seconds_bucket[1m])) by (le)) or histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[1m])) by (le))',
                         "legendFormat": "p95 Latency",
                         "range": True,
-                        "refId": "B"
+                        "refId": "B",
                     },
                     {
                         "datasource": PROM_DATASOURCE,
                         "editorMode": "code",
-                        "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"api-rs\"}[1m])) by (le)) or histogram_quantile(0.50, sum(rate(actix_http_request_duration_seconds_bucket[1m])) by (le)) or histogram_quantile(0.50, sum(rate(api_request_duration_seconds_bucket[1m])) by (le))",
+                        "expr": 'histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job="api-rs"}[1m])) by (le)) or histogram_quantile(0.50, sum(rate(actix_http_request_duration_seconds_bucket[1m])) by (le)) or histogram_quantile(0.50, sum(rate(api_request_duration_seconds_bucket[1m])) by (le))',
                         "legendFormat": "p50 (Median) Latency",
                         "range": True,
-                        "refId": "C"
-                    }
+                        "refId": "C",
+                    },
                 ],
                 "fieldConfig": {
                     "defaults": {
@@ -1297,7 +1438,7 @@ def make_pipeline_system_dashboard():
                             "lineWidth": 2,
                             "showPoints": "never",
                             "spanNulls": False,
-                            "thresholdsStyle": {"mode": "line"}
+                            "thresholdsStyle": {"mode": "line"},
                         },
                         "mappings": [],
                         "thresholds": {
@@ -1305,30 +1446,53 @@ def make_pipeline_system_dashboard():
                             "steps": [
                                 {"color": "green", "value": None},
                                 {"color": "yellow", "value": 0.05},
-                                {"color": "red", "value": 0.20}
-                            ]
+                                {"color": "red", "value": 0.20},
+                            ],
                         },
-                        "unit": "s"
+                        "unit": "s",
                     },
                     "overrides": [
                         {
                             "matcher": {"id": "byName", "options": "p99 Latency"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#F2495C", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#F2495C", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "p95 Latency"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#FF9830", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#FF9830", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
-                            "matcher": {"id": "byName", "options": "p50 (Median) Latency"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#73BF69", "mode": "fixed"}}]
-                        }
-                    ]
+                            "matcher": {
+                                "id": "byName",
+                                "options": "p50 (Median) Latency",
+                            },
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#73BF69", "mode": "fixed"},
+                                }
+                            ],
+                        },
+                    ],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 10, "x": 14, "y": 32},
@@ -1341,10 +1505,10 @@ def make_pipeline_system_dashboard():
                     {
                         "datasource": PROM_DATASOURCE,
                         "editorMode": "code",
-                        "expr": "sum by (status) (rate(http_requests_total{job=\"api-rs\"}[1m])) or sum by (status) (rate(actix_http_requests_total[1m])) or sum by (status) (rate(api_requests_total[1m]))",
+                        "expr": 'sum by (status) (rate(http_requests_total{job="api-rs"}[1m])) or sum by (status) (rate(actix_http_requests_total[1m])) or sum by (status) (rate(api_requests_total[1m]))',
                         "legendFormat": "HTTP {{status}}",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1359,19 +1523,24 @@ def make_pipeline_system_dashboard():
                             "fillOpacity": 60,
                             "lineWidth": 1,
                             "showPoints": "never",
-                            "stacking": {"group": "A", "mode": "normal"}
+                            "stacking": {"group": "A", "mode": "normal"},
                         },
                         "mappings": [],
-                        "unit": "reqps"
+                        "unit": "reqps",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
-            }
-        ]
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
+            },
+        ],
     }
 
 
@@ -1388,7 +1557,7 @@ def make_grid_anomalies_dashboard():
                     "enable": True,
                     "hide": True,
                     "name": "Annotations & Alerts",
-                    "type": "dashboard"
+                    "type": "dashboard",
                 }
             ]
         },
@@ -1413,10 +1582,10 @@ def make_grid_anomalies_dashboard():
                         {"selected": True, "text": "All", "value": "All"},
                         {"selected": False, "text": "CRITICAL", "value": "CRITICAL"},
                         {"selected": False, "text": "WARNING", "value": "WARNING"},
-                        {"selected": False, "text": "INFO", "value": "INFO"}
+                        {"selected": False, "text": "INFO", "value": "INFO"},
                     ],
                     "query": "All,CRITICAL,WARNING,INFO",
-                    "type": "custom"
+                    "type": "custom",
                 },
                 {
                     "current": {"selected": True, "text": "All", "value": "All"},
@@ -1425,15 +1594,39 @@ def make_grid_anomalies_dashboard():
                     "name": "alert_type",
                     "options": [
                         {"selected": True, "text": "All", "value": "All"},
-                        {"selected": False, "text": "VOLTAGE_SAG", "value": "VOLTAGE_SAG"},
-                        {"selected": False, "text": "VOLTAGE_SWELL", "value": "VOLTAGE_SWELL"},
-                        {"selected": False, "text": "DEMAND_SPIKE", "value": "DEMAND_SPIKE"},
-                        {"selected": False, "text": "PHASE_IMBALANCE", "value": "PHASE_IMBALANCE"},
-                        {"selected": False, "text": "LOW_POWER_FACTOR", "value": "LOW_POWER_FACTOR"},
-                        {"selected": False, "text": "FREQUENCY_DEVIATION", "value": "FREQUENCY_DEVIATION"}
+                        {
+                            "selected": False,
+                            "text": "VOLTAGE_SAG",
+                            "value": "VOLTAGE_SAG",
+                        },
+                        {
+                            "selected": False,
+                            "text": "VOLTAGE_SWELL",
+                            "value": "VOLTAGE_SWELL",
+                        },
+                        {
+                            "selected": False,
+                            "text": "DEMAND_SPIKE",
+                            "value": "DEMAND_SPIKE",
+                        },
+                        {
+                            "selected": False,
+                            "text": "PHASE_IMBALANCE",
+                            "value": "PHASE_IMBALANCE",
+                        },
+                        {
+                            "selected": False,
+                            "text": "LOW_POWER_FACTOR",
+                            "value": "LOW_POWER_FACTOR",
+                        },
+                        {
+                            "selected": False,
+                            "text": "FREQUENCY_DEVIATION",
+                            "value": "FREQUENCY_DEVIATION",
+                        },
                     ],
                     "query": "All,VOLTAGE_SAG,VOLTAGE_SWELL,DEMAND_SPIKE,PHASE_IMBALANCE,LOW_POWER_FACTOR,FREQUENCY_DEVIATION",
-                    "type": "custom"
+                    "type": "custom",
                 },
                 {
                     "current": {"selected": True, "text": "All", "value": "All"},
@@ -1448,13 +1641,17 @@ def make_grid_anomalies_dashboard():
                     "options": [],
                     "query": "SELECT DISTINCT meter_id FROM meter_alerts ORDER BY 1;",
                     "refresh": 1,
-                    "type": "query"
+                    "type": "query",
                 },
                 {
                     "auto": True,
                     "auto_count": 30,
                     "auto_min": "5s",
-                    "current": {"selected": True, "text": "auto", "value": "$__auto_interval"},
+                    "current": {
+                        "selected": True,
+                        "text": "auto",
+                        "value": "$__auto_interval",
+                    },
                     "hide": 0,
                     "label": "Interval",
                     "name": "interval",
@@ -1464,18 +1661,16 @@ def make_grid_anomalies_dashboard():
                         {"selected": False, "text": "10s", "value": "10s"},
                         {"selected": False, "text": "30s", "value": "30s"},
                         {"selected": False, "text": "1m", "value": "1m"},
-                        {"selected": False, "text": "5m", "value": "5m"}
+                        {"selected": False, "text": "5m", "value": "5m"},
                     ],
                     "query": "5s,10s,30s,1m,5m",
                     "refresh": 2,
-                    "type": "interval"
-                }
+                    "type": "interval",
+                },
             ]
         },
         "time": {"from": "now-30m", "to": "now"},
-        "timepicker": {
-            "refresh_intervals": ["1s", "5s", "10s", "30s", "1m", "5m"]
-        },
+        "timepicker": {"refresh_intervals": ["1s", "5s", "10s", "30s", "1m", "5m"]},
         "timezone": "browser",
         "title": "Grid Anomalies & Power Quality Alerts",
         "uid": "grid-anomalies",
@@ -1496,7 +1691,7 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT NOW() AS \"time\", COUNT(*) AS \"Critical\"\nFROM meter_alerts\nWHERE\n  severity = 'CRITICAL'\n  AND $__timeFilter(time)\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id');",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1505,20 +1700,24 @@ def make_grid_anomalies_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [{"color": "red", "value": None}]
+                            "steps": [{"color": "red", "value": None}],
                         },
-                        "unit": "short"
+                        "unit": "short",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 5, "x": 5, "y": 0},
@@ -1533,7 +1732,7 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT NOW() AS \"time\", COUNT(*) AS \"Warning\"\nFROM meter_alerts\nWHERE\n  severity = 'WARNING'\n  AND $__timeFilter(time)\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id');",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1542,20 +1741,24 @@ def make_grid_anomalies_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [{"color": "orange", "value": None}]
+                            "steps": [{"color": "orange", "value": None}],
                         },
-                        "unit": "short"
+                        "unit": "short",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 4, "x": 10, "y": 0},
@@ -1570,7 +1773,7 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT NOW() AS \"time\", COUNT(*) AS \"Info\"\nFROM meter_alerts\nWHERE\n  severity = 'INFO'\n  AND $__timeFilter(time)\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id');",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1579,20 +1782,24 @@ def make_grid_anomalies_dashboard():
                         "mappings": [],
                         "thresholds": {
                             "mode": "absolute",
-                            "steps": [{"color": "blue", "value": None}]
+                            "steps": [{"color": "blue", "value": None}],
                         },
-                        "unit": "short"
+                        "unit": "short",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "area",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 5, "x": 14, "y": 0},
@@ -1607,7 +1814,7 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT NOW() AS \"time\", COUNT(*) AS \"Total Incidents\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id');",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1619,21 +1826,25 @@ def make_grid_anomalies_dashboard():
                             "steps": [
                                 {"color": "green", "value": None},
                                 {"color": "yellow", "value": 1},
-                                {"color": "red", "value": 10}
-                            ]
+                                {"color": "red", "value": 10},
+                            ],
                         },
-                        "unit": "short"
+                        "unit": "short",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "colorMode": "value",
                     "graphMode": "none",
                     "justifyMode": "auto",
                     "orientation": "auto",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "textMode": "auto"
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "textMode": "auto",
+                },
             },
             {
                 "gridPos": {"h": 4, "w": 5, "x": 19, "y": 0},
@@ -1648,45 +1859,65 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT severity AS \"Severity\", COUNT(*) AS \"Count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 2 DESC;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
-                    "defaults": {
-                        "color": {"mode": "palette-classic"},
-                        "mappings": []
-                    },
+                    "defaults": {"color": {"mode": "palette-classic"}, "mappings": []},
                     "overrides": [
                         {
                             "matcher": {"id": "byName", "options": "CRITICAL"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#F2495C", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#F2495C", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "WARNING"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#FF9830", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#FF9830", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "INFO"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}}]
-                        }
-                    ]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#5794F2", "mode": "fixed"},
+                                }
+                            ],
+                        },
+                    ],
                 },
                 "options": {
                     "displayLabels": ["percent"],
-                    "legend": {"displayMode": "table", "placement": "right", "showLegend": True, "values": ["value"]},
+                    "legend": {
+                        "displayMode": "table",
+                        "placement": "right",
+                        "showLegend": True,
+                        "values": ["value"],
+                    },
                     "pieType": "donut",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "tooltip": {"mode": "single", "sort": "none"}
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "tooltip": {"mode": "single", "sort": "none"},
+                },
             },
-
             # Row 1: Anomaly Timeline by Type
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4},
                 "id": 100,
                 "title": "Anomaly Timeline by Type (VOLTAGE_SAG, VOLTAGE_SWELL, DEMAND_SPIKE, PHASE_IMBALANCE)",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 16, "x": 0, "y": 5},
@@ -1702,7 +1933,7 @@ def make_grid_anomalies_dashboard():
                         "format": "time_series",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time_bucket('$interval', time) AS \"time\",\n  alert_type AS metric,\n  COUNT(*) AS \"count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1, 2\nORDER BY 1;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1718,42 +1949,80 @@ def make_grid_anomalies_dashboard():
                             "lineWidth": 1,
                             "showPoints": "never",
                             "spanNulls": False,
-                            "stacking": {"group": "A", "mode": "normal"}
+                            "stacking": {"group": "A", "mode": "normal"},
                         },
                         "mappings": [],
-                        "unit": "short"
+                        "unit": "short",
                     },
                     "overrides": [
                         {
                             "matcher": {"id": "byName", "options": "VOLTAGE_SAG"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#E02F44", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#E02F44", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "VOLTAGE_SWELL"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#FA6400", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#FA6400", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "DEMAND_SPIKE"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#FADE2A", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#FADE2A", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "PHASE_IMBALANCE"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#5794F2", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "LOW_POWER_FACTOR"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#8AB8FF", "mode": "fixed"}}]
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#8AB8FF", "mode": "fixed"},
+                                }
+                            ],
                         },
                         {
-                            "matcher": {"id": "byName", "options": "FREQUENCY_DEVIATION"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#B877D9", "mode": "fixed"}}]
-                        }
-                    ]
+                            "matcher": {
+                                "id": "byName",
+                                "options": "FREQUENCY_DEVIATION",
+                            },
+                            "properties": [
+                                {
+                                    "id": "color",
+                                    "value": {"fixedColor": "#B877D9", "mode": "fixed"},
+                                }
+                            ],
+                        },
+                    ],
                 },
                 "options": {
-                    "legend": {"calcs": ["sum", "max"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
+                    "legend": {
+                        "calcs": ["sum", "max"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 8, "x": 16, "y": 5},
@@ -1769,32 +2038,37 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT alert_type AS \"Anomaly Type\", COUNT(*) AS \"Count\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nGROUP BY 1\nORDER BY 2 DESC;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
-                    "defaults": {
-                        "color": {"mode": "palette-classic"},
-                        "mappings": []
-                    },
-                    "overrides": []
+                    "defaults": {"color": {"mode": "palette-classic"}, "mappings": []},
+                    "overrides": [],
                 },
                 "options": {
                     "displayLabels": ["percent", "name"],
-                    "legend": {"displayMode": "table", "placement": "bottom", "showLegend": True, "values": ["value", "percent"]},
+                    "legend": {
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                        "values": ["value", "percent"],
+                    },
                     "pieType": "donut",
-                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
-                    "tooltip": {"mode": "single", "sort": "none"}
-                }
+                    "reduceOptions": {
+                        "calcs": ["lastNotNull"],
+                        "fields": "",
+                        "values": False,
+                    },
+                    "tooltip": {"mode": "single", "sort": "none"},
+                },
             },
-
             # Row 2: Active Grid Incident Table
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13},
                 "id": 101,
                 "title": "Active Grid Incident Table",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 10, "w": 24, "x": 0, "y": 14},
@@ -1810,7 +2084,7 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT\n  time AS \"timestamp\",\n  meter_id,\n  severity,\n  alert_type,\n  ROUND(value::numeric, 2) AS value,\n  ROUND(threshold::numeric, 2) AS threshold,\n  message\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\n  AND ('$meter_id' = 'All' OR meter_id = '$meter_id')\nORDER BY time DESC\nLIMIT 200;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1819,9 +2093,9 @@ def make_grid_anomalies_dashboard():
                         "custom": {
                             "align": "auto",
                             "cellOptions": {"type": "auto"},
-                            "inspect": False
+                            "inspect": False,
                         },
-                        "mappings": []
+                        "mappings": [],
                     },
                     "overrides": [
                         {
@@ -1829,73 +2103,102 @@ def make_grid_anomalies_dashboard():
                             "properties": [
                                 {
                                     "id": "custom.cellOptions",
-                                    "value": {"type": "color-background"}
+                                    "value": {"type": "color-background"},
                                 },
                                 {
                                     "id": "mappings",
                                     "value": [
-                                        {"options": {"CRITICAL": {"color": "red", "index": 0, "text": "CRITICAL"}}, "type": "value"},
-                                        {"options": {"WARNING": {"color": "orange", "index": 1, "text": "WARNING"}}, "type": "value"},
-                                        {"options": {"INFO": {"color": "blue", "index": 2, "text": "INFO"}}, "type": "value"}
-                                    ]
-                                }
-                            ]
+                                        {
+                                            "options": {
+                                                "CRITICAL": {
+                                                    "color": "red",
+                                                    "index": 0,
+                                                    "text": "CRITICAL",
+                                                }
+                                            },
+                                            "type": "value",
+                                        },
+                                        {
+                                            "options": {
+                                                "WARNING": {
+                                                    "color": "orange",
+                                                    "index": 1,
+                                                    "text": "WARNING",
+                                                }
+                                            },
+                                            "type": "value",
+                                        },
+                                        {
+                                            "options": {
+                                                "INFO": {
+                                                    "color": "blue",
+                                                    "index": 2,
+                                                    "text": "INFO",
+                                                }
+                                            },
+                                            "type": "value",
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "meter_id"},
                             "properties": [
                                 {"id": "custom.align", "value": "center"},
-                                {"id": "displayName", "value": "Meter ID"}
-                            ]
+                                {"id": "displayName", "value": "Meter ID"},
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "alert_type"},
                             "properties": [
                                 {"id": "displayName", "value": "Anomaly Type"}
-                            ]
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "value"},
                             "properties": [
                                 {"id": "displayName", "value": "Observed Value"}
-                            ]
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "threshold"},
-                            "properties": [
-                                {"id": "displayName", "value": "Threshold"}
-                            ]
+                            "properties": [{"id": "displayName", "value": "Threshold"}],
                         },
                         {
                             "matcher": {"id": "byName", "options": "message"},
                             "properties": [
                                 {"id": "displayName", "value": "Diagnosis / Context"}
-                            ]
+                            ],
                         },
                         {
                             "matcher": {"id": "byName", "options": "timestamp"},
                             "properties": [
                                 {"id": "custom.align", "value": "center"},
-                                {"id": "displayName", "value": "Timestamp"}
-                            ]
-                        }
-                    ]
+                                {"id": "displayName", "value": "Timestamp"},
+                            ],
+                        },
+                    ],
                 },
                 "options": {
                     "cellHeight": "sm",
-                    "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                    "footer": {
+                        "countRows": False,
+                        "fields": "",
+                        "reducer": ["sum"],
+                        "show": False,
+                    },
                     "showHeader": True,
-                    "sortBy": [{"desc": True, "displayName": "Timestamp"}]
-                }
+                    "sortBy": [{"desc": True, "displayName": "Timestamp"}],
+                },
             },
-
             # Row 3: Top Affected Meters
             {
                 "collapsed": False,
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 24},
                 "id": 102,
                 "title": "Incident Concentration & Hotspots",
-                "type": "row"
+                "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 12, "x": 0, "y": 25},
@@ -1911,7 +2214,7 @@ def make_grid_anomalies_dashboard():
                         "format": "table",
                         "rawQuery": True,
                         "rawSql": "SELECT meter_id AS \"Meter\", COUNT(*) AS \"Incidents\"\nFROM meter_alerts\nWHERE\n  $__timeFilter(time)\n  AND ('$severity' = 'All' OR severity = '$severity')\n  AND ('$alert_type' = 'All' OR alert_type = '$alert_type')\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1924,25 +2227,29 @@ def make_grid_anomalies_dashboard():
                             "axisPlacement": "auto",
                             "fillOpacity": 80,
                             "gradientMode": "none",
-                            "lineWidth": 1
+                            "lineWidth": 1,
                         },
                         "mappings": [],
-                        "unit": "short"
+                        "unit": "short",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
                     "barRadius": 0.1,
                     "barWidth": 0.8,
                     "groupWidth": 0.7,
-                    "legend": {"displayMode": "none", "placement": "bottom", "showLegend": False},
+                    "legend": {
+                        "displayMode": "none",
+                        "placement": "bottom",
+                        "showLegend": False,
+                    },
                     "orientation": "horizontal",
                     "showValue": "always",
                     "stacking": "none",
                     "tooltip": {"mode": "single", "sort": "none"},
                     "xField": "Meter",
-                    "yField": "Incidents"
-                }
+                    "yField": "Incidents",
+                },
             },
             {
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 25},
@@ -1958,7 +2265,7 @@ def make_grid_anomalies_dashboard():
                         "expr": "sum by (alert_type) (rate(anomaly_alerts_total[1m])) or sum(rate(anomaly_alerts_total[1m])) or vector(0)",
                         "legendFormat": "Alerts: {{alert_type}}",
                         "range": True,
-                        "refId": "A"
+                        "refId": "A",
                     }
                 ],
                 "fieldConfig": {
@@ -1974,19 +2281,24 @@ def make_grid_anomalies_dashboard():
                             "lineInterpolation": "smooth",
                             "lineWidth": 2,
                             "showPoints": "never",
-                            "spanNulls": False
+                            "spanNulls": False,
                         },
                         "mappings": [],
-                        "unit": "reqps"
+                        "unit": "reqps",
                     },
-                    "overrides": []
+                    "overrides": [],
                 },
                 "options": {
-                    "legend": {"calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": True},
-                    "tooltip": {"mode": "multi", "sort": "desc"}
-                }
-            }
-        ]
+                    "legend": {
+                        "calcs": ["mean", "max", "last"],
+                        "displayMode": "table",
+                        "placement": "bottom",
+                        "showLegend": True,
+                    },
+                    "tooltip": {"mode": "multi", "sort": "desc"},
+                },
+            },
+        ],
     }
 
 

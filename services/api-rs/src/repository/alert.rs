@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 
-use crate::domain::AlertRecord;
 use super::error::RepositoryError;
+use crate::domain::AlertRecord;
 
 #[async_trait]
 pub trait AlertRepository: Send + Sync {

@@ -11,7 +11,6 @@ lazy_static! {
         &["method", "endpoint", "status"]
     )
     .expect("failed to register http_requests_total");
-
     pub static ref HTTP_REQUEST_DURATION_SECONDS: HistogramVec = register_histogram_vec!(
         "http_request_duration_seconds",
         "HTTP request latency in seconds for api-rs",

@@ -100,7 +100,9 @@ class SmartMeter:
         if override_delta_seconds is not None:
             delta_seconds = max(0.001, override_delta_seconds)
         elif self.last_reading_time is not None:
-            delta_seconds = max(0.001, (timestamp - self.last_reading_time).total_seconds())
+            delta_seconds = max(
+                0.001, (timestamp - self.last_reading_time).total_seconds()
+            )
         else:
             delta_seconds = 2.0  # Default initial interval
 

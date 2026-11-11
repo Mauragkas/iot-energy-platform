@@ -53,11 +53,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let pool = db::create_pool(&config)?;
 
-    let metrics_server = metrics::start_metrics_server(
-        pool.clone(),
-        &config.metrics_host,
-        config.metrics_port,
-    )?;
+    let metrics_server =
+        metrics::start_metrics_server(pool.clone(), &config.metrics_host, config.metrics_port)?;
     let server_handle = metrics_server.handle();
     let server_task = tokio::spawn(metrics_server);
 

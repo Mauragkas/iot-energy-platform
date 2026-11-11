@@ -40,7 +40,8 @@ impl ResponseError for ServiceError {
             ServiceError::NotFound(_) => StatusCode::NOT_FOUND,
             ServiceError::Repository(RepositoryError::NotFound(_)) => StatusCode::NOT_FOUND,
             ServiceError::Repository(RepositoryError::InvalidInput(_)) => StatusCode::BAD_REQUEST,
-            ServiceError::Unavailable(_) | ServiceError::Repository(RepositoryError::Connection(_)) => {
+            ServiceError::Unavailable(_)
+            | ServiceError::Repository(RepositoryError::Connection(_)) => {
                 StatusCode::SERVICE_UNAVAILABLE
             }
             ServiceError::Repository(RepositoryError::Database(_)) => {
@@ -56,9 +57,8 @@ impl ResponseError for ServiceError {
                 "NOT_FOUND"
             }
             ServiceError::Repository(RepositoryError::InvalidInput(_)) => "BAD_REQUEST",
-            ServiceError::Unavailable(_) | ServiceError::Repository(RepositoryError::Connection(_)) => {
-                "SERVICE_UNAVAILABLE"
-            }
+            ServiceError::Unavailable(_)
+            | ServiceError::Repository(RepositoryError::Connection(_)) => "SERVICE_UNAVAILABLE",
             ServiceError::Repository(RepositoryError::Database(_)) => "INTERNAL_SERVER_ERROR",
         };
 

@@ -24,12 +24,14 @@ pub struct MqttConfig {
 impl MqttConfig {
     /// Loads MQTT configuration from environment variables or sensible defaults.
     pub fn from_env() -> Self {
-        let broker_host = std::env::var("MQTT_BROKER_HOST").unwrap_or_else(|_| "localhost".to_string());
+        let broker_host =
+            std::env::var("MQTT_BROKER_HOST").unwrap_or_else(|_| "localhost".to_string());
         let broker_port = std::env::var("MQTT_BROKER_PORT")
             .ok()
             .and_then(|p| p.parse().ok())
             .unwrap_or(1883);
-        let share_group = std::env::var("MQTT_SHARE_GROUP").unwrap_or_else(|_| "ingest".to_string());
+        let share_group =
+            std::env::var("MQTT_SHARE_GROUP").unwrap_or_else(|_| "ingest".to_string());
         let topic_filter = std::env::var("MQTT_TOPIC_FILTER")
             .unwrap_or_else(|_| "meazon/grid/+/meter/+/telemetry".to_string());
 
@@ -94,7 +96,10 @@ pub async fn process_message<P: TelemetryPublisher + ?Sized>(
     // 2. Semantic validation
     if let Err(e) = telemetry.validate() {
         TELEMETRY_MESSAGES_REJECTED_TOTAL.inc();
-        warn!("Telemetry validation failed for meter '{}': {}", telemetry.meter_id, e);
+        warn!(
+            "Telemetry validation failed for meter '{}': {}",
+            telemetry.meter_id, e
+        );
         return ProcessOutcome::Rejected(format!("Validation error: {}", e));
     }
 
@@ -124,11 +129,17 @@ pub async fn process_message<P: TelemetryPublisher + ?Sized>(
         Ok(_) => {
             timer.observe_duration();
             TELEMETRY_MESSAGES_PUBLISHED_TOTAL.inc();
-            debug!("Successfully published telemetry for meter '{}'", telemetry.meter_id);
+            debug!(
+                "Successfully published telemetry for meter '{}'",
+                telemetry.meter_id
+            );
             ProcessOutcome::Published(telemetry.meter_id)
         }
         Err(e) => {
-            error!("Failed to publish to Kafka for meter '{}': {}", telemetry.meter_id, e);
+            error!(
+                "Failed to publish to Kafka for meter '{}': {}",
+                telemetry.meter_id, e
+            );
             ProcessOutcome::Rejected(format!("Kafka publish error: {}", e))
         }
     }
@@ -142,7 +153,8 @@ pub async fn run_mqtt_subscriber<P: TelemetryPublisher + 'static>(
     publisher: Arc<P>,
     mut shutdown_rx: tokio::sync::watch::Receiver<bool>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let mut mqttoptions = MqttOptions::new(&config.client_id, &config.broker_host, config.broker_port);
+    let mut mqttoptions =
+        MqttOptions::new(&config.client_id, &config.broker_host, config.broker_port);
     mqttoptions.set_keep_alive(Duration::from_secs(30));
     mqttoptions.set_clean_session(true);
 

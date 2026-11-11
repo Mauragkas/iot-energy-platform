@@ -28,7 +28,11 @@ pub struct DeviceTwin {
     pub nominal_frequency: f64,
     pub thresholds: TwinThresholds,
     pub location: TwinLocation,
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_installed_at")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_installed_at"
+    )]
     pub installed_at: Option<DateTime<Utc>>,
     pub status: String,
 }
@@ -52,11 +56,9 @@ pub mod flexible_installed_at {
         match b {
             bson::Bson::Null => Ok(None),
             bson::Bson::DateTime(dt) => Ok(Some(dt.to_chrono())),
-            bson::Bson::String(s) => {
-                DateTime::parse_from_rfc3339(&s)
-                    .map(|dt| Some(dt.with_timezone(&Utc)))
-                    .map_err(serde::de::Error::custom)
-            }
+            bson::Bson::String(s) => DateTime::parse_from_rfc3339(&s)
+                .map(|dt| Some(dt.with_timezone(&Utc)))
+                .map_err(serde::de::Error::custom),
             bson::Bson::Int64(ms) => Ok(DateTime::from_timestamp_millis(ms)),
             bson::Bson::Document(doc) => {
                 if let Some(bson::Bson::DateTime(dt)) = doc.get("$date") {

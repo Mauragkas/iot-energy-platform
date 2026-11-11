@@ -4,9 +4,9 @@ use mongodb::bson::doc;
 use mongodb::options::FindOptions;
 use mongodb::{Collection, Database};
 
-use crate::domain::DeviceTwin;
 use super::error::RepositoryError;
 use super::twin::TwinRepository;
+use crate::domain::DeviceTwin;
 
 pub struct MongoTwinRepository {
     collection: Collection<DeviceTwin>,
@@ -57,10 +57,7 @@ impl TwinRepository for MongoTwinRepository {
         Ok(twins)
     }
 
-    async fn get_twin(
-        &self,
-        meter_id: &str,
-    ) -> Result<Option<DeviceTwin>, RepositoryError> {
+    async fn get_twin(&self, meter_id: &str) -> Result<Option<DeviceTwin>, RepositoryError> {
         let filter = doc! { "meter_id": meter_id };
         self.collection
             .find_one(filter, None)

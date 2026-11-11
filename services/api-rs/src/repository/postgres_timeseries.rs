@@ -2,9 +2,9 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use deadpool_postgres::Pool;
 
-use crate::domain::{ConsumptionResponse, RollupBucket, TimeseriesPoint};
 use super::error::RepositoryError;
 use super::timeseries::TimeseriesRepository;
+use crate::domain::{ConsumptionResponse, RollupBucket, TimeseriesPoint};
 
 pub struct TimescaleTimeseriesRepository {
     pool: Pool,

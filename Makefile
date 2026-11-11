@@ -84,7 +84,7 @@ cluster-down:
 k8s-build:
 	@echo "==> Building microservice container images..."
 	docker build -t iot-platform/ingestor-rs:latest services/ingestor-rs
-	docker build -t iot-platform/persister-rs:latest -f services/persister-rs/Dockerfile .
+	docker build -t iot-platform/persister-rs:latest services/persister-rs
 	docker build -t iot-platform/anomaly-worker-py:latest services/anomaly-worker-py
 	docker build -t iot-platform/api-rs:latest services/api-rs
 
