@@ -6,6 +6,7 @@ INSTALL_METRICS ?= true
 INSTALL_INGRESS ?= true
 
 .PHONY: help up down ps logs clean test lint \
+	start-services stop-services status-services \
 	cluster-up cluster-down k8s-build k8s-load-images k8s-deploy k8s-clean \
 	demo-load demo-hpa demo-kill
 
@@ -15,6 +16,9 @@ help:
 	@echo "  make up              - Start Docker Compose infrastructure (Mosquitto, Kafka, DBs, Observability)"
 	@echo "  make down            - Stop Docker Compose infrastructure"
 	@echo "  make ps              - View running infrastructure containers"
+	@echo "  make start-services  - Launch all 4 microservices in the background (Ingestor, Persister, Anomaly, API)"
+	@echo "  make stop-services   - Stop all 4 background microservices"
+	@echo "  make status-services - Healthcheck and status of all 4 microservices"
 	@echo "  make logs            - Tail logs of all infrastructure containers"
 	@echo "  make clean           - Stop containers and purge volumes"
 	@echo "  make test            - Run all unit and integration test suites"
@@ -28,6 +32,15 @@ help:
 	@echo "  make demo-load       - Run simulator with 500 meters at 5.0 msg/s for 60s to trigger HPA"
 	@echo "  make demo-hpa        - Watch HPA autoscaling and pod status in namespace iot-platform"
 	@echo "  make demo-kill       - Chaos test: kill running ingestor/persister pod and verify seamless recovery"
+
+start-services:
+	@bash scripts/services.sh start
+
+stop-services:
+	@bash scripts/services.sh stop
+
+status-services:
+	@bash scripts/services.sh status
 
 up:
 	docker compose up -d
