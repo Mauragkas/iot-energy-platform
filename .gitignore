@@ -29,3 +29,12 @@ data/
 # K8s / Helm
 *.tgz
 k8s/charts/*/charts/
+
+# LaTeX
+report/*.aux
+report/*.fdb_latexmk
+report/*.fls
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz

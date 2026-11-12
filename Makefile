@@ -5,7 +5,7 @@ CLUSTER_NAME ?= iot-energy-cluster
 INSTALL_METRICS ?= true
 INSTALL_INGRESS ?= true
 
-.PHONY: help up down ps logs clean test lint \
+.PHONY: help up down ps logs clean test lint report \
 	start-services stop-services status-services scrape-dashboards \
 	cluster-up cluster-down k8s-build k8s-load-images k8s-deploy k8s-clean \
 	demo-load demo-hpa demo-kill
@@ -45,6 +45,11 @@ status-services:
 
 scrape-dashboards:
 	@uv run python scripts/scrape_dashboards.py
+
+report:
+	@echo "Compiling technical report LaTeX to PDF..."
+	@cd report && latexmk -pdf -interaction=nonstopmode main.tex
+	@echo "Technical Report PDF ready: report/main.pdf"
 
 up:
 	docker compose up -d
