@@ -6,19 +6,20 @@ INSTALL_METRICS ?= true
 INSTALL_INGRESS ?= true
 
 .PHONY: help up down ps logs clean test lint \
-	start-services stop-services status-services \
+	start-services stop-services status-services scrape-dashboards \
 	cluster-up cluster-down k8s-build k8s-load-images k8s-deploy k8s-clean \
 	demo-load demo-hpa demo-kill
 
 help:
 	@echo "IoT Energy Platform - Management Commands"
 	@echo "=========================================="
-	@echo "  make up              - Start Docker Compose infrastructure (Mosquitto, Kafka, DBs, Observability)"
-	@echo "  make down            - Stop Docker Compose infrastructure"
-	@echo "  make ps              - View running infrastructure containers"
-	@echo "  make start-services  - Launch all 4 microservices in the background (Ingestor, Persister, Anomaly, API)"
-	@echo "  make stop-services   - Stop all 4 background microservices"
-	@echo "  make status-services - Healthcheck and status of all 4 microservices"
+	@echo "  make up                - Start Docker Compose infrastructure (Mosquitto, Kafka, DBs, Observability)"
+	@echo "  make down              - Stop Docker Compose infrastructure"
+	@echo "  make ps                - View running infrastructure containers"
+	@echo "  make start-services    - Launch all 4 microservices in the background (Ingestor, Persister, Anomaly, API)"
+	@echo "  make stop-services     - Stop all 4 background microservices"
+	@echo "  make status-services   - Healthcheck and status of all 4 microservices"
+	@echo "  make scrape-dashboards - Scrape and validate all Grafana dashboard panels via API"
 	@echo "  make logs            - Tail logs of all infrastructure containers"
 	@echo "  make clean           - Stop containers and purge volumes"
 	@echo "  make test            - Run all unit and integration test suites"
@@ -41,6 +42,9 @@ stop-services:
 
 status-services:
 	@bash scripts/services.sh status
+
+scrape-dashboards:
+	@uv run python scripts/scrape_dashboards.py
 
 up:
 	docker compose up -d
