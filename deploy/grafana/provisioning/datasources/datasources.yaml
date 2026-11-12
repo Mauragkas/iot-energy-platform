@@ -19,6 +19,7 @@ datasources:
       password: postgres
     database: iot_energy
     jsonData:
+      database: iot_energy
       sslmode: disable
       postgresVersion: 1600
       timescaledb: true
