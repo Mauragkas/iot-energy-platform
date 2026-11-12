@@ -12,7 +12,6 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, backgrounds, fit}
 \usepackage{fancyhdr}
-\setlength{\headheight}{14.5pt}
 \usepackage{titlesec}
 \usepackage{microtype}
 
@@ -52,14 +51,19 @@
     tabsize=2
 }
 
+% Header and Footer Setup (No collision / overlapping)
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{\textcolor{carbonmuted}{\small IoT Smart-Energy Telemetry Platform: Technical Report}}
-\lhead{\textcolor{carbonmuted}{\small System Design, DB Schemas \& Technology Showcase}}
+\setlength{\headheight}{24pt}
+\addtolength{\topmargin}{-9.5pt}
+\lhead{\textcolor{carbonmuted}{\footnotesize \textbf{IoT Smart-Energy Platform}}}
+\rhead{\textcolor{carbonmuted}{\footnotesize Technical Report \& Architecture Showcase}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{carbonhairline}\leaders\hrule height \headrulewidth\hfill}}
 \cfoot{\textcolor{carbonmuted}{\thepage}}
 
 \title{
-    \vspace{-1.5cm}
+    \vspace{-1.2cm}
     \textbf{\Large IoT Smart-Energy Telemetry Platform}\\
     \large System Architecture, Database Schemas, Technology Showcase, and High-Throughput Performance Engineering
 }
@@ -71,13 +75,17 @@
 \begin{document}
 
 \maketitle
+\thispagestyle{plain}
 
 \begin{abstract}
-This technical report presents the architecture, engineering design decisions, database schemas, and empirical benchmarks of the \textbf{IoT Smart-Energy Telemetry Platform}. Engineered to model high-density industrial smart grid monitoring, the platform ingests, processes, analyzes, and serves high-frequency three-phase electrical telemetry across hundreds of virtual meters. The pipeline transitions from edge MQTT v5 brokers through an Apache Kafka streaming backbone (KRaft mode) into TimescaleDB continuous aggregates and MongoDB digital device twins. A real-time sliding-window analytics engine written in Python evaluates power-quality faults (EN 50160) within 1.84 seconds, while a high-throughput Actix-web service in Rust exposes sub-1.55 ms REST APIs fronted by an Envoy Layer 7 load balancer. We document the end-to-end data lifecycle, compare technology trade-offs, detail exact relational and document schemas, and present benchmark proofs verifying 214+ msg/sec sustained throughput with 100\% edge replay deduplication under Kubernetes orchestration.
+\noindent This technical report presents the architecture, engineering design decisions, database schemas, and empirical benchmarks of the \textbf{IoT Smart-Energy Telemetry Platform}. Engineered to model high-density industrial smart grid monitoring, the platform ingests, processes, analyzes, and serves high-frequency three-phase electrical telemetry across hundreds of virtual meters. The pipeline transitions from edge MQTT v5 brokers through an Apache Kafka streaming backbone (KRaft mode) into TimescaleDB continuous aggregates and MongoDB digital device twins. A real-time sliding-window analytics engine written in Python evaluates power-quality faults (EN 50160) within 1.84 seconds, while a high-throughput Actix-web service in Rust exposes sub-1.55 ms REST APIs fronted by an Envoy Layer 7 load balancer. We document the end-to-end data lifecycle, compare technology trade-offs, detail exact relational and document schemas, and present benchmark proofs verifying 214+ msg/sec sustained throughput with 100\% edge replay deduplication under Kubernetes orchestration.
 \end{abstract}
 
-\vspace{0.5cm}
+\vspace{-0.2cm}
+{
+\hypersetup{linkcolor=carbonink}
 \tableofcontents
+}
 \newpage
 
 % ==============================================================================
@@ -115,6 +123,7 @@ Figure~\ref{fig:arch_schematic} illustrates the end-to-end data flow and service
 
 \begin{figure}[htbp]
 \centering
+\resizebox{0.90\linewidth}{!}{
 \begin{tikzpicture}[
     node distance=1.2cm and 1.5cm,
     box/.style={rectangle, draw=carbonhairline, fill=carbonsurface, thick, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small},
@@ -151,6 +160,7 @@ Figure~\ref{fig:arch_schematic} illustrates the end-to-end data flow and service
 \draw[arrow] (envoy) -- (client);
 
 \end{tikzpicture}
+}
 \caption{End-to-End IoT Smart-Energy Telemetry Platform Architecture.}
 \label{fig:arch_schematic}
 \end{figure}
@@ -165,7 +175,7 @@ Written in Rust on the \texttt{tokio} asynchronous runtime:
 \begin{itemize}
     \item \textbf{MQTT v5 Shared Subscriptions}: Ingests via \texttt{\$share/ingestors/iot/telemetry/+}. The broker balances load across all active \texttt{ingestor-rs} replicas without message duplication.
     \item \textbf{In-Memory Replay Deduplication}: Maintains a lock-free 100,000-key LRU cache indexing \texttt{(meter\_id, timestamp)}. Retransmitted gateway bursts are discarded in memory in under $10\,\mu\text{s}$.
-    \item \textbf{Kafka Partition Keying}: Serializes verified readings and dispatches them to \texttt{iot.telemetry.raw} partitioned strictly by \texttt{meter\_id}.
+    \item \textbf{Kafka Partition Keying}: Serializes verified readings to topic \texttt{iot.\allowbreak telemetry.\allowbreak raw}, partitioned strictly by \texttt{meter\_id}.
 \end{itemize}
 
 \subsubsection{Streaming Backbone (Apache Kafka KRaft)}
@@ -200,6 +210,7 @@ Figure~\ref{fig:seq_diagram} traces the message lifecycle from physical emission
 
 \begin{figure}[htbp]
 \centering
+\resizebox{0.95\linewidth}{!}{
 \begin{tikzpicture}[
     font=\footnotesize,
     lifeline/.style={draw=carbonhairline, dashed, thick},
@@ -234,6 +245,7 @@ Figure~\ref{fig:seq_diagram} traces the message lifecycle from physical emission
 \draw[msg] (13.6,-4.9) -- node[above] {7. Commit Tx \& Offset} (10.4,-4.9);
 
 \end{tikzpicture}
+}
 \caption{Sequence Diagram: Edge Telemetry Ingestion, Replay Filtering, and Persistence.}
 \label{fig:seq_diagram}
 \end{figure}
@@ -332,27 +344,28 @@ Table~\ref{tab:tech_justification} summarizes the core technology stack and the 
 \begin{table}[htbp]
 \centering
 \small
-\begin{tabularx}{\textwidth}{l p{3.2cm} X}
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.8cm} X}
 \toprule
 \textbf{Component Layer} & \textbf{Technology Chosen} & \textbf{Engineering Rationale \& Justification} \\
 \midrule
-\textbf{Ingestor \& Persister} & Rust (Nightly 1.96, Tokio) & Eliminates Garbage Collection pauses. Provides predictable low-latency packet processing with safe lock-free memory abstractions. \\
+Ingestor \& Persister & Rust (Nightly 1.96, Tokio) & Eliminates Garbage Collection pauses. Provides predictable low-latency packet processing with safe lock-free memory abstractions. \\
 \addlinespace
-\textbf{Edge Broker} & Mosquitto (MQTT v5 QoS 1) & Built-in support for shared subscription consumer groups (\texttt{\$share}), achieving horizontal load distribution without broker-side state synchronization. \\
+Edge Broker & Mosquitto (MQTT v5 QoS 1) & Built-in support for shared subscription consumer groups (\texttt{\$share}), achieving horizontal load distribution without broker-side state synchronization. \\
 \addlinespace
-\textbf{Event Stream} & Apache Kafka (KRaft Mode) & High append-only write throughput. Partitioning by \texttt{meter\_id} guarantees sequential order while removing ZooKeeper operational complexity. \\
+Event Stream & Apache Kafka (KRaft Mode) & High append-only write throughput. Partitioning by \texttt{meter\_id} guarantees sequential order while removing ZooKeeper operational complexity. \\
 \addlinespace
-\textbf{Time-Series Storage} & TimescaleDB (PostgreSQL 16) & Relational ACID guarantees combined with automatic time-based partitioning, continuous background rollups, and 90.4\% columnar compression savings. \\
+Time-Series Storage & TimescaleDB (PostgreSQL 16) & Relational ACID guarantees combined with automatic time-based partitioning, continuous background rollups, and 90.4\% columnar compression savings. \\
 \addlinespace
-\textbf{Device Twin Storage} & MongoDB 7.0 & Schemaless document model allows dynamic hardware metadata, flexible operational thresholds, and geospatial queries without altering relational DDL. \\
+Device Twin Storage & MongoDB 7.0 & Schemaless document model allows dynamic hardware metadata, flexible operational thresholds, and geospatial queries without altering relational DDL. \\
 \addlinespace
-\textbf{Anomaly Detection} & Python 3.14 (\texttt{uv}) & Expressive sliding window data structures and rapid statistical evaluation against EN 50160 power quality standards. \\
+Anomaly Detection & Python 3.14 (\texttt{uv}) & Expressive sliding window data structures and rapid statistical evaluation against EN 50160 power quality standards. \\
 \addlinespace
-\textbf{REST Query Engine} & Actix-web 4 (Rust) & Top-tier performance in TechEmpower benchmarks; asynchronous pipelined execution sustaining sub-1.55\,ms p95 latencies. \\
+REST Query Engine & Actix-web 4 (Rust) & Top-tier performance in TechEmpower benchmarks; asynchronous pipelined execution sustaining sub-1.55\,ms p95 latencies. \\
 \addlinespace
-\textbf{L7 Ingress} & Envoy Proxy & Terminates persistent client connections and distributes individual HTTP/2 multiplexed streams across backend pods via \texttt{STRICT\_DNS}. \\
+L7 Ingress & Envoy Proxy & Terminates persistent client connections and distributes individual HTTP/2 multiplexed streams across backend pods via \texttt{STRICT\_DNS}. \\
 \addlinespace
-\textbf{Orchestration} & Kubernetes (v1.37) \& Helm & Standardized declarative rollouts, liveness/readiness probing, and automated Horizontal Pod Autoscaling (HPA v2). \\
+Orchestration & Kubernetes (v1.37) \& Helm & Standardized declarative rollouts, liveness/readiness probing, and automated Horizontal Pod Autoscaling (HPA v2). \\
 \bottomrule
 \end{tabularx}
 \caption{Technology Selection Matrix and Engineering Rationale.}
@@ -371,10 +384,10 @@ Table~\ref{tab:api_latencies} details the measured response times for 200 consec
 
 \begin{table}[htbp]
 \centering
-\small
+\resizebox{\linewidth}{!}{
 \begin{tabular}{l c c c c r}
 \toprule
-\textbf{Endpoint Target} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{SLA Target} & \textbf{Margin Under SLA} \\
+\textbf{Endpoint Target} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{SLA Target} & \textbf{Margin vs SLA} \\
 \midrule
 Meters List (\texttt{/api/v1/meters}) & 0.92 & \textbf{1.20} & 1.48 & 50.0\,ms & 97.6\% \\
 1m Rollup (\texttt{/timeseries?res=1m}) & 1.02 & \textbf{1.15} & 7.42 & 50.0\,ms & 97.7\% \\
@@ -383,14 +396,15 @@ Consumption (\texttt{/consumption}) & 1.02 & \textbf{1.32} & 2.87 & 50.0\,ms & 9
 Alerts Query (\texttt{/api/v1/alerts}) & 0.90 & \textbf{1.04} & 1.98 & 50.0\,ms & 97.9\% \\
 \bottomrule
 \end{tabular}
+}
 \caption{REST API Latency Verification across Actix-web Endpoints.}
 \label{tab:api_latencies}
 \end{table}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/fig1_rest_api_latency.png}
-\caption{Figure 1: REST API Latency Profile vs 50\,ms SLA (PTVM QC-6 / QC-4).}
+\includegraphics[width=0.92\linewidth]{figures/fig1_rest_api_latency.png}
+\caption{REST API Latency Profile vs 50\,ms SLA (PTVM QC-6 / QC-4).}
 \label{fig:fig1_api}
 \end{figure}
 
@@ -405,8 +419,8 @@ During a sustained test with 500 active virtual smart meters streaming at 1.0\,m
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.90\textwidth]{figures/fig2_ingestion_integrity.png}
-\caption{Figure 2: Pipeline Ingestion Throughput \& Deduplication Integrity (PTVM QC-3).}
+\includegraphics[width=0.88\linewidth]{figures/fig2_ingestion_integrity.png}
+\caption{Pipeline Ingestion Throughput \& Deduplication Integrity (PTVM QC-3).}
 \label{fig:fig2_integrity}
 \end{figure}
 
