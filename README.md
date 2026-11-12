@@ -240,7 +240,7 @@ Standard Kubernetes `kube-proxy` operates at Layer 4 (TCP), causing HTTP/2 multi
 
 ## Live Demonstrations & Chaos Scenarios
 
-The repository includes ready-to-run automation for live portfolio walkthroughs and chaos engineering experiments. See [`docs/demo.md`](docs/demo.md) for the complete 3-minute scripted presentation.
+The repository includes ready-to-run automation for live portfolio walkthroughs and chaos engineering experiments (detailed in the [Technical Report](docs/technical-report.md)).
 
 ### 1. High-Throughput Load & HPA Autoscaling
 Trigger a load spike of 500 meters at 5.0 msg/s to drive CPU utilization past 70% and observe autoscaling:
@@ -277,17 +277,16 @@ iot-energy-platform/
 │   └── sql/01_init_timescale.sql    # TimescaleDB hypertables, rollups & compression policies
 ├── docs/                            # In-depth architectural & project documentation
 │   ├── benchmarks.md                # Automated load & latency benchmark results
-│   ├── demo.md                      # 3-Minute Live Portfolio Demonstration Walkthrough
-│   ├── plan.md                      # Engineering implementation plan & milestones
-│   ├── PROJECT.md                   # Full system architecture & design specification
 │   ├── schemas/                     # JSON Schemas for telemetry and alerts
-│   └── state.md                     # Current implementation state tracker
+│   ├── technical-report.md          # Comprehensive System Architecture & Technology Showcase
+│   └── visualizations/              # PTVM system architecture & verified benchmark figures
 ├── k8s/                             # Kubernetes orchestration
 │   ├── base/                        # Production manifests (00-namespace through 07-servicemonitor)
 │   ├── charts/platform/             # Helm chart with values-dev.yaml & values-prod.yaml
 │   └── cluster/kind-config.yaml     # 3-Node Kind cluster topology definition
 ├── scripts/                         # Benchmark & dashboard generation utilities
 │   ├── generate_dashboards.py       # Python script generating production Grafana dashboards
+│   ├── generate_ptvm_visualizations.py # PTVM publication-grade visual generator
 │   └── run_benchmarks.py            # End-to-end integration and latency benchmark runner
 ├── services/                        # Platform microservices
 │   ├── anomaly-worker-py/           # Python real-time sliding-window anomaly detector
@@ -306,8 +305,7 @@ iot-energy-platform/
 
 For deeper engineering details, refer to the documentation suite:
 
-- **[System Architecture & Specification (`docs/PROJECT.md`)](docs/PROJECT.md)**: Exhaustive technical specification, data contracts, and protocol choices.
-- **[3-Minute Portfolio Walkthrough Script (`docs/demo.md`)](docs/demo.md)**: Minute-by-minute live presentation guide with voiceover script and commands.
+- **[System Architecture & Technology Showcase (`docs/technical-report.md`)](docs/technical-report.md)**: Exhaustive technical report covering distributed data lifecycle, SOLID design, Kubernetes orchestration, and benchmarks.
 - **[Performance & Latency Benchmarks (`docs/benchmarks.md`)](docs/benchmarks.md)**: Verified throughput, duplicate filtering, and p50/p95/p99 latency tables.
-- **[Engineering Roadmap & Plan (`docs/plan.md`)](docs/plan.md)**: Milestone tracking from foundation through chaos engineering.
-- **[Session State & Verification Tracker (`docs/state.md`)](docs/state.md)**: Test verification logs, active infrastructure state, and toolchain versions.
+- **[Visualizations & PTVM Architecture (`docs/visualizations/README.md`)](docs/visualizations/README.md)**: IBM Carbon-styled system topology diagrams and empirical latency/ingestion figures.
+- **[Data Contracts & Schemas (`docs/schemas/`)](docs/schemas/)**: Canonical JSON Schemas defining contracts for telemetry readings, device twins, and grid alerts.
