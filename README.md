@@ -1,6 +1,6 @@
 # IoT Smart-Energy Telemetry Platform
 
-[![CI](https://github.com/mauragkas/iot-energy-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mauragkas/iot-energy-platform/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/badge/CI-Paused-lightgrey?logo=githubactions)](.github/workflows/ci.yml)
 [![Rust Nightly](https://img.shields.io/badge/Rust-1.96%20Nightly-orange?logo=rust)](https://www.rust-lang.org/)
 [![Python 3.14 + uv](https://img.shields.io/badge/Python-3.14%20%2B%20uv-blue?logo=python)](https://github.com/astral-sh/uv)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.37-326CE5?logo=kubernetes)](https://kubernetes.io/)
@@ -92,9 +92,11 @@ flowchart TD
 
 ## Verified Benchmark Results
 
-The following verified metrics were produced by the automated test suite ([`scripts/run_benchmarks.py`](scripts/run_benchmarks.py)) and recorded in [`docs/benchmarks.md`](docs/benchmarks.md):
+The following verified metrics were produced by the automated test suite ([`scripts/run_benchmarks.py`](scripts/run_benchmarks.py)) and recorded in [`docs/benchmarks.md`](docs/benchmarks.md). For the complete visual catalog, system diagrams, and compression plots styled per the IBM Carbon Design System, see [`docs/visualizations/README.md`](docs/visualizations/README.md).
 
 ### 1. End-to-End Pipeline Throughput & Latency
+
+![Pipeline Ingestion Integrity](docs/visualizations/figures/fig2_ingestion_integrity.png)
 
 | Benchmark Dimension | Measured Result | Target Specification | Status |
 | :--- | :--- | :--- | :--- |
@@ -105,6 +107,8 @@ The following verified metrics were produced by the automated test suite ([`scri
 | **Grid Anomaly Detection Time** | **72 alerts (< 2.0s)** | < 2.0s from fault injection | **Passed** |
 
 ### 2. REST API Latency Profile (Actix-web on Port 8080)
+
+![REST API Latency Profile](docs/visualizations/figures/fig1_rest_api_latency.png)
 
 | Endpoint / Query Target | p50 Latency | p95 Latency | p99 Latency | Target (p95) |
 | :--- | :--- | :--- | :--- | :--- |

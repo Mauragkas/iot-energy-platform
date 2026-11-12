@@ -4,6 +4,8 @@
 
 ## 1. End-to-End Pipeline Throughput
 
+![Pipeline Ingestion Integrity](visualizations/figures/fig2_ingestion_integrity.png)
+
 | Metric | Result | Target Specification | Status |
 | :--- | :--- | :--- | :--- |
 | **Active Virtual Meters** | **500 meters** | 500+ virtual meters | Passed |
@@ -13,6 +15,8 @@
 | **Anomaly Alert Generation** | **72 alerts (< 2.0s)** | < 2.0s from fault injection | **Passed** |
 
 ## 2. REST API Latency Profile (Actix-web)
+
+![REST API Latency Profile](visualizations/figures/fig1_rest_api_latency.png)
 
 | Endpoint / Query Target | p50 Latency | p95 Latency | p99 Latency | Target (p95) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -27,3 +31,7 @@
 - **MQTT v5 Shared Subscriptions**: Horizontal ingestor scaling verified without duplicate message processing.
 - **Idempotent Storage**: Zero duplicate alerts inserted into TimescaleDB under repeat replay injections.
 - **Continuous Aggregation**: 1-minute and 1-hour TimescaleDB continuous aggregates queried cleanly via REST API with sub-5ms p95 latency.
+
+---
+
+> For the comprehensive visual catalog, architectural diagrams, anomaly dynamics, and storage compression plots styled with IBM Carbon Design, see [`docs/visualizations/README.md`](visualizations/README.md).
